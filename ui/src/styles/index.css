@@ -75,7 +75,13 @@ h1 {
   aspect-ratio: 1;
 }
 
-@keyframes wine-hover {
+.cta:hover {
+  color: white;
+  background-color: #722f37;
+  animation: cta-hover ease 1s;
+}
+
+@keyframes cta-hover {
   0% {
     color: black;
     background-color: transparent;
@@ -84,12 +90,6 @@ h1 {
     color: white;
     background-color: #722f37;
   }
-}
-
-.cta:hover {
-  color: white;
-  background-color: #722f37;
-  animation: wine-hover ease 1s;
 }
 
 .cta svg {
