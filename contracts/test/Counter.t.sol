@@ -12,7 +12,8 @@ import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
 import {CurrencyLibrary, Currency} from "v4-core/src/types/Currency.sol";
 import {PoolSwapTest} from "v4-core/src/test/PoolSwapTest.sol";
 import {Deployers} from "v4-core/test/utils/Deployers.sol";
-import {Counter} from "../src/Counter.sol";
+import {LendingHook} from "../src/LendingHook.sol";
+import {SyntheticHook} from "../src/SyntheticHook.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
@@ -22,35 +23,64 @@ contract CounterTest is Test, Deployers {
     using CurrencyLibrary for Currency;
     using StateLibrary for IPoolManager;
 
-    Counter hook;
+    LendingHook hook;
+    SyntheticHook synthHook;
+
     PoolId poolId;
     PoolKey controlKey;
+    PoolKey synthKey;
+
+    function deployAndInitializeSyntheticPool() internal {
+        address flags = address(
+            uint160(
+                Hooks.BEFORE_SWAP_FLAG
+                | Hooks.BEFORE_ADD_LIQUIDITY_FLAG
+                | Hooks.BEFORE_REMOVE_LIQUIDITY_FLAG
+            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
+        );
+        synthHook = SyntheticHook(flags);
+        synthKey = PoolKey(currency0, currency1, 3000, 60, IHooks(synthHook));
+        manager.initialize(synthKey, SQRT_PRICE_1_1, ZERO_BYTES);
+    }
+
+    function deployAndInitializeLendingPool() internal {
+        deployAndInitializeSyntheticPool();
+        // Deploy the hook to an address with the correct flags
+        address flags = address(
+            uint160(
+//                Hooks.BEFORE_INITIALIZE_FLAG
+//                    | Hooks.BEFORE_SWAP_FLAG
+                Hooks.BEFORE_SWAP_FLAG
+                | Hooks.AFTER_ADD_LIQUIDITY_FLAG
+                | Hooks.AFTER_ADD_LIQUIDITY_RETURNS_DELTA_FLAG
+                | Hooks.AFTER_REMOVE_LIQUIDITY_FLAG
+                | Hooks.AFTER_REMOVE_LIQUIDITY_RETURNS_DELTA_FLAG
+            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
+        );
+        hook = LendingHook(flags);
+        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
+        manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
+//        hook.addSyntheticPoolKey(synthKey);
+    }
+
+    function deployAndInitializeControlPool() internal {
+        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
+        poolId = key.toId();
+        manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
+    }
 
     function setUp() public {
         // creates the pool manager, utility routers, and test tokens
         Deployers.deployFreshManagerAndRouters();
         Deployers.deployMintAndApprove2Currencies();
 
-        // Deploy the hook to an address with the correct flags
-        address flags = address(
-            uint160(
-                Hooks.BEFORE_SWAP_FLAG
-                    | Hooks.AFTER_ADD_LIQUIDITY_FLAG
-                    | Hooks.AFTER_ADD_LIQUIDITY_RETURNS_DELTA_FLAG
-                    | Hooks.AFTER_REMOVE_LIQUIDITY_FLAG
-                    | Hooks.AFTER_REMOVE_LIQUIDITY_RETURNS_DELTA_FLAG
-            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
-        );
-        deployCodeTo("Counter.sol:Counter", abi.encode(manager), flags);
-        hook = Counter(flags);
-
-        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
-        manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
-        // Create the pool
-        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
-        poolId = key.toId();
-        manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
+        deployAndInitializeLendingPool();
+        deployAndInitializeControlPool();
     }
+
+//    function testInitialize() public {
+//        assertEq(hook.syntheticPoolId(), controlKey.toId());
+//    }
 
     function testSwaprHooks() public {
         modifyLiquidityRouter.modifyLiquidity(
