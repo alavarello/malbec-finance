@@ -1,5 +1,7 @@
+import Card from './Card'
+
 export default function Lend({ onClose }) {
   return (
-    <>Lend</>
+    <Card>Lend</Card>
   )
 }
