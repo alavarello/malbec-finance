@@ -89,11 +89,6 @@ contract LendingHook is BaseHook {
         return IHooks.afterInitialize.selector;
     }
 
-    // TODO: Add owner
-    function addSyntheticPoolKey(PoolKey calldata poolKey) external {
-        syntheticPoolKey = poolKey;
-    }
-
     function bytesToAddress(bytes calldata data) private pure returns (address addr) {
         bytes memory b = data;
         assembly {
