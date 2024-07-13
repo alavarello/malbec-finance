@@ -7,3 +7,18 @@
 [submodule "contracts/lib/v4-core"]
 	path = contracts/lib/v4-core
 	url = https://github.com/uniswap/v4-core
+[submodule "pancake-hooks/lib/forge-std"]
+	path = pancake-hooks/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "pancake-hooks/lib/pancake-v4-core"]
+	path = pancake-hooks/lib/pancake-v4-core
+	url = https://github.com/pancakeswap/pancake-v4-core
+[submodule "pancake-hooks/lib/pancake-v4-periphery"]
+	path = pancake-hooks/lib/pancake-v4-periphery
+	url = https://github.com/pancakeswap/pancake-v4-periphery
+[submodule "pancake-hooks/lib/openzeppelin-contracts"]
+	path = pancake-hooks/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+[submodule "pancake-hooks/lib/solmate"]
+	path = pancake-hooks/lib/solmate
+	url = https://github.com/transmissions11/solmate
