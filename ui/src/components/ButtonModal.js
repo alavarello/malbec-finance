@@ -13,7 +13,11 @@ export default function ButtonModal({ className, children, modal: Modal }) {
         {children}
       </button>
       {showModal && createPortal(
-        <div className="overlay" onClick={() => close()}>
+        <div className="overlay" onClick={(event) => {
+          if (event.target.className === 'overlay') {
+            close()
+          }
+        }}>
           <Modal onClose={() => close()} />
         </div>,
         document.body
