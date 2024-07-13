@@ -272,18 +272,31 @@ h1 {
 .actions {
   margin-top: .5rem;
 }
-
 .actions button {
   cursor: pointer;
   border-radius: .5rem;
-  background-color: white;
-  border-color: #722f37;
+  color: black;
+  background-color: #722f3721;
   text-transform: uppercase;
   font-size: smaller;
+  padding: 10px 20px;
+  border: none;
+  box-shadow: 0 4px 6px rgba(114, 47, 55, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  top: 0;
 }
 
 .actions button:hover {
-  background-color: #722f3721;
+  background-color: rgba(114, 47, 55, 0.82);
+  color: white;
+  box-shadow: 0 6px 8px rgba(114, 47, 55, 0.3);
+}
+
+.actions button:active {
+  top: 2px;
+  box-shadow: 0 2px 4px rgba(114, 47, 55, 0.2);
+  background-color: rgba(114, 47, 55, 0.9);
 }
 
 .spinner {

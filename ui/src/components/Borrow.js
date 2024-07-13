@@ -68,7 +68,7 @@ export default function Borrow({ onClose }) {
             )}
           </div>
           <div className="actions">
-            <button disabled={!isBorrowValid} onClick={() => alert('Borrow request submitted!')}>Submit</button>
+            <button disabled={!isBorrowValid} onClick={() => alert('Borrow request submitted!')}>Borrow</button>
           </div>
         </div>
       </Card>
