@@ -17,6 +17,7 @@ export const PYTH = Object.fromEntries(
 console.debug(PYTH)
 
 // Prices should be from COIN/USD
+// https://pyth.network/developers/price-feed-ids
 export const PRICE_FEED_IDS = {
   ETH: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace',
   DAI: '0xb0948a5e5313200c632b51bb5ca32f6de0d36e9950a942d19751e833f70dabfd',
