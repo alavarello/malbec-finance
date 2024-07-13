@@ -17,6 +17,4 @@ docs/
 # Node modules
 node_modules/
 
-lib
-
 .idea
