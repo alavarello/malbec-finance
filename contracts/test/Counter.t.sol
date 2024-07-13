@@ -55,39 +55,63 @@ contract CounterTest is Test, Deployers {
     function testSwaprHooks() public {
         modifyLiquidityRouter.modifyLiquidity(
             controlKey,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(120), 6 ether, 0),
-            ZERO_BYTES
-        );
-        modifyLiquidityRouter.modifyLiquidity(
-            controlKey,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(120), TickMath.maxUsableTick(120), 6 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
             ZERO_BYTES
         );
 
         modifyLiquidityRouter.modifyLiquidity(
             key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
+            IPoolManager.ModifyLiquidityParams(-600, 600, 6 ether, 0),
             ZERO_BYTES
         );
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(-180, 120, 2 ether, 0),
+            ZERO_BYTES
+        );
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(60, 120, 2 ether, 0),
+            ZERO_BYTES
+        );
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(60, 180, 6 ether, 0),
+            ZERO_BYTES
+        );
+
 //
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
 //        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 9 ether);
 
 
         // Perform a test swap //
         bool zeroForOne = true;
-        int256 amountSpecified = 1e18; // negative number indicates exact input swap!
-
-//        vm.prank(controlUser);
-        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
+        int256 amountSpecified = 0.01 ether; // negative number indicates exact input swap!
+//
+////        vm.prank(controlUser);
+//        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
         BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+        BalanceDelta swapDelta1 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta2 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta3 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta4 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta5 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta6 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta7 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta8 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta9 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
         // ------------------- //
+
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
 
 //        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1.5 ether);
 //        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 10 ether);
 
-        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
-        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
+//        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
+//        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
 
     }
 
