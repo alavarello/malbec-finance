@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
-export default function ButtonModal({ className, children, modal: Modal }) {
+export default function ButtonModal({ className, children, modal: Modal, ...props }) {
   const [showModal, setShowModal] = useState()
 
   const open = () => setShowModal(true)
@@ -18,7 +18,7 @@ export default function ButtonModal({ className, children, modal: Modal }) {
             close()
           }
         }}>
-          <Modal onClose={() => close()} />
+          <Modal onClose={() => close()} {...props} />
         </div>,
         document.body
       )}

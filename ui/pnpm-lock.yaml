@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@pythnetwork/pyth-sdk-solidity':
+        specifier: ^3.1.0
+        version: 3.1.0
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.3
@@ -1172,6 +1175,9 @@ packages:
         optional: true
       webpack-plugin-serve:
         optional: true
+
+  '@pythnetwork/pyth-sdk-solidity@3.1.0':
+    resolution: {integrity: sha512-NgtEPUTL9r0qqMpIOEtSdUVjrF08fHK6wa7eM8hdjhjzMOti4o053B9oFqpm4lkzJW6eELXuP4sRJOABGmNTUg==}
 
   '@rollup/plugin-babel@5.3.1':
     resolution: {integrity: sha512-WFfdLWU/xVWKeRQnKmIAQULUI7Il0gZnBIH/ZFO069wYIfPu+8zrfp/KMW0atmELoRDq8FbiP3VCss9MhCut7Q==}
@@ -7687,6 +7693,8 @@ snapshots:
     optionalDependencies:
       type-fest: 0.21.3
       webpack-dev-server: 4.15.2(webpack@5.93.0)
+
+  '@pythnetwork/pyth-sdk-solidity@3.1.0': {}
 
   '@rollup/plugin-babel@5.3.1(@babel/core@7.24.8)(@types/babel__core@7.20.5)(rollup@2.79.1)':
     dependencies:
