@@ -1,5 +1,5 @@
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
-import { DEFAULT_CHAIN_ID, CHAINS } from '../constants/chains'
+import { CHAINS, DEFAULT_CHAIN_ID, DEFAULT_RPC_URL } from '../constants/chains'
 
 const projectId = process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID
 
@@ -12,7 +12,7 @@ const metadata = {
 
 const ethersConfig = defaultConfig({
   metadata,
-  rpcUrl: 'https://cloudflare-eth.com',
+  rpcUrl: DEFAULT_RPC_URL,
   defaultChainId: DEFAULT_CHAIN_ID,
 })
 
