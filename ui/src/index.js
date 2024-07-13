@@ -3,6 +3,7 @@ import WalletConnect from './components/WalletConnect'
 import ButtonModal from './components/ButtonModal'
 import Lend from './components/Lend'
 import Borrow from './components/Borrow'
+import PositionList from './components/PositionList'
 import { ReactComponent as Wine } from './assets/Wine.svg'
 import { ReactComponent as Barrel } from './assets/Barrel.svg'
 import { WalletProvider } from './stores/wallet'
@@ -31,6 +32,7 @@ root.render(
           <span>Borrowing</span>
         </ButtonModal>
       </div>
+      <PositionList />
     </main>
   </WalletProvider>
 )
