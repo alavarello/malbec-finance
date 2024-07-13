@@ -1,10 +1,8 @@
-function TokenDisplay({ token }) {
+export default function TokenDisplay({ symbol, name }) {
   return (
     <div className="token-item">
     <div className="token-icon" />
-      <div>{`${token.symbol} - ${token.name}`}</div>
+      <div>{`${symbol} - ${name}`}</div>
     </div>
   )
 }
-
-export default TokenDisplay;
