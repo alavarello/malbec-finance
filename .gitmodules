@@ -19,6 +19,7 @@
 [submodule "pancake-hooks/lib/openzeppelin-contracts"]
 	path = pancake-hooks/lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v4.9
 [submodule "pancake-hooks/lib/solmate"]
 	path = pancake-hooks/lib/solmate
 	url = https://github.com/transmissions11/solmate
