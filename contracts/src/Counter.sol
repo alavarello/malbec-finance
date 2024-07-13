@@ -11,12 +11,14 @@ import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
 import {BalanceDelta, toBalanceDelta, BalanceDeltaLibrary} from "v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary, toBeforeSwapDelta} from "v4-core/src/types/BeforeSwapDelta.sol";
 import {Currency, CurrencyLibrary} from "v4-core/src/types/Currency.sol";
+import {CurrencySettler} from "v4-core/test/utils/CurrencySettler.sol";
 import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
 contract Counter is BaseHook {
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
+    using CurrencySettler for Currency;
 
     // NOTE: ---------------------------------------------------------
     // state variables should typically be unique to a pool
@@ -66,20 +68,20 @@ contract Counter is BaseHook {
         // TODO: Add liquidity to this pool from lender
         // data of synthetic swap
         lockCall();
-        console2.log("Hola");
-        console2.log((IERC20(Currency.unwrap(key.currency0)).balanceOf(address(this))));
 
         IERC20(Currency.unwrap(key.currency0)).approve(address(manager), 5 ether);
         IERC20(Currency.unwrap(key.currency1)).approve(address(manager), 5 ether);
 
-        manager.modifyLiquidity(
+        (BalanceDelta result,) = manager.modifyLiquidity(
             key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
             new bytes(0)
         );
+        console2.log(result.amount0());
+        console2.log(result.amount1());
+        key.currency0.settle(manager, address(this), uint128(-result.amount0()), false);
+        key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
 
-        console2.log((IERC20(Currency.unwrap(key.currency0)).balanceOf(address(this))));
-        console2.log("Hola 2");
         unlockCall();
 
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
@@ -100,15 +102,10 @@ contract Counter is BaseHook {
         BalanceDelta delta,
         bytes calldata bla2
     ) external override returns (bytes4, BalanceDelta) {
-        console2.log("Hola 3");
-        // TODO: Mint and add tokens to synthetic pool
         if(lock) {
-            console2.log('Loco');
             return (BaseHook.afterAddLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
         }
 
-        console2.log(sender);
-        console2.log(address(this));
         manager.take(key.currency0, address(this), uint128(-delta.amount0()));
         manager.take(key.currency1, address(this), uint128(-delta.amount1()));
         return (BaseHook.afterAddLiquidity.selector, toBalanceDelta(-delta.amount0(), -delta.amount1()));

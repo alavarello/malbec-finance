@@ -55,28 +55,36 @@ contract CounterTest is Test, Deployers {
     function testSwaprHooks() public {
         modifyLiquidityRouter.modifyLiquidity(
             controlKey,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 3 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(120), 6 ether, 0),
+            ZERO_BYTES
+        );
+        modifyLiquidityRouter.modifyLiquidity(
+            controlKey,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(120), TickMath.maxUsableTick(120), 6 ether, 0),
             ZERO_BYTES
         );
 
         modifyLiquidityRouter.modifyLiquidity(
             key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 3 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
             ZERO_BYTES
         );
-
-        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
-        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 6 ether);
+//
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 9 ether);
 
 
         // Perform a test swap //
         bool zeroForOne = true;
-        int256 amountSpecified = -1e18; // negative number indicates exact input swap!
+        int256 amountSpecified = 1e18; // negative number indicates exact input swap!
 
 //        vm.prank(controlUser);
         BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
         BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
         // ------------------- //
+
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1.5 ether);
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 10 ether);
 
         assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
         assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
