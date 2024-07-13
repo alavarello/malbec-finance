@@ -5,9 +5,11 @@ import TokenPairDropDown from './TokenPairDropDown'
 import ExchangeToggle from './ExchangeToggle'
 import { LENDING_CONDITIONS } from '../constants/lending'
 import { useExchange } from '../stores/exchange'
+import { useWallet } from '../stores/wallet'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
+  const { isConnected } = useWallet()
 
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
@@ -19,7 +21,7 @@ export default function Borrow({ onClose }) {
     return fromToken && toToken && fromToken.symbol !== toToken.symbol
   }
 
-  const isBorrowValid = validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
+  const isBorrowValid = isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
 
   const handleTargetPriceChange = (event) => {
     setTargetPrice(event.target.value)
@@ -72,6 +74,9 @@ export default function Borrow({ onClose }) {
           <div className="actions">
             <button disabled={!isBorrowValid} onClick={() => alert('Borrow request submitted!')}>Borrow</button>
           </div>
+          {!isConnected && (
+            <div className="error">Connect your wallet to Borrow</div>
+          )}
         </div>
       </Card>
     </div>
