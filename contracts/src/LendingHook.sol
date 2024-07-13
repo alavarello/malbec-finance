@@ -7,6 +7,7 @@ import "forge-std/Test.sol";
 import {Hooks} from "v4-core/src/libraries/Hooks.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
+import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
 import {PoolId, PoolIdLibrary} from "v4-core/src/types/PoolId.sol";
 import {BalanceDelta, toBalanceDelta, BalanceDeltaLibrary} from "v4-core/src/types/BalanceDelta.sol";
 import {BeforeSwapDelta, BeforeSwapDeltaLibrary, toBeforeSwapDelta} from "v4-core/src/types/BeforeSwapDelta.sol";
@@ -19,7 +20,10 @@ import {Pool} from "v4-core/src/libraries/Pool.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 import {PoolGetters} from "lib/v4-periphery/contracts/libraries/PoolGetters.sol";
 
-contract Counter is BaseHook {
+contract LendingHook is BaseHook {
+    bytes constant ZERO_BYTES = new bytes(0);
+
+
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
     using CurrencySettler for Currency;
@@ -27,18 +31,8 @@ contract Counter is BaseHook {
     using PoolGetters for IPoolManager;
     using TickBitmap for mapping(int16 => uint256);
 
-    // NOTE: ---------------------------------------------------------
-    // state variables should typically be unique to a pool
-    // a single hook contract should be able to service multiple pools
-    // ---------------------------------------------------------------
-
-    mapping(PoolId => uint256 count) public beforeSwapCount;
-    mapping(PoolId => uint256 count) public afterSwapCount;
-
-    mapping(PoolId => uint256 count) public beforeAddLiquidityCount;
-    mapping(PoolId => uint256 count) public beforeRemoveLiquidityCount;
-
     bool public lock = false;
+    PoolKey public syntheticPoolKey;
 
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
@@ -69,6 +63,11 @@ contract Counter is BaseHook {
         return price;
     }
 
+    // TODO: Add owner
+    function addSyntheticPoolKey(PoolKey calldata poolKey) external {
+        syntheticPoolKey = poolKey;
+    }
+
     function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
     external
     override
@@ -85,23 +84,23 @@ contract Counter is BaseHook {
         lockCall();
         lockCall();
 
-        (uint160 sqrtPriceX96, int24 tickCurrent,,) = manager.getSlot0(key.toId());
-//    (uint128 liquidityGross, int128 liquidityNet,,) = manager.getTickInfo(key.toId(), tickCurrent);
-//        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) = manager.getFeeGrowthInside(key.toId(), -1, 0);
-    console2.log("-----------------------");
-    console2.log("Current ticker", tickCurrent);
-    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), tickCurrent));
-//    console2.log("Liquidity Gross from current ticker", liquidityGross);
-//    console2.log("Liquidity Net from current ticker", liquidityNet);
-    console2.log("Tick from price", TickMath.getTickAtSqrtPrice(sqrtPriceX96));
-    console2.log("Price", sqrtPriceX96);
-    (int24 nextTicker,) = manager.getNextInitializedTickWithinOneWord(key.toId(), tickCurrent, key.tickSpacing, true);
-    (uint128 nextLiquidityGross, int128 nextLiquidityNet,,) = manager.getTickInfo(key.toId(), nextTicker);
-    console2.log("Next ticker", nextTicker);
-    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), nextTicker));
-    console2.log("Liquidity Gross from next ticker", nextLiquidityGross);
-    console2.log("Liquidity Net from next ticker", nextLiquidityNet);
-    console2.log("-----------------------");
+//        (uint160 sqrtPriceX96, int24 tickCurrent,,) = manager.getSlot0(key.toId());
+////    (uint128 liquidityGross, int128 liquidityNet,,) = manager.getTickInfo(key.toId(), tickCurrent);
+////        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) = manager.getFeeGrowthInside(key.toId(), -1, 0);
+//    console2.log("-----------------------");
+//    console2.log("Current ticker", tickCurrent);
+//    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), tickCurrent));
+////    console2.log("Liquidity Gross from current ticker", liquidityGross);
+////    console2.log("Liquidity Net from current ticker", liquidityNet);
+//    console2.log("Tick from price", TickMath.getTickAtSqrtPrice(sqrtPriceX96));
+//    console2.log("Price", sqrtPriceX96);
+//    (int24 nextTicker,) = manager.getNextInitializedTickWithinOneWord(key.toId(), tickCurrent, key.tickSpacing, true);
+//    (uint128 nextLiquidityGross, int128 nextLiquidityNet,,) = manager.getTickInfo(key.toId(), nextTicker);
+//    console2.log("Next ticker", nextTicker);
+//    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), nextTicker));
+//    console2.log("Liquidity Gross from next ticker", nextLiquidityGross);
+//    console2.log("Liquidity Net from next ticker", nextLiquidityNet);
+//    console2.log("-----------------------");
 
 //        (BalanceDelta result,) = manager.modifyLiquidity(
 //            key,
