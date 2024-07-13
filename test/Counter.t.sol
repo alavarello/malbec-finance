@@ -14,6 +14,8 @@ import {PoolSwapTest} from "v4-core/src/test/PoolSwapTest.sol";
 import {Deployers} from "v4-core/test/utils/Deployers.sol";
 import {Counter} from "../src/Counter.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
+
 
 contract CounterTest is Test, Deployers {
     using PoolIdLibrary for PoolKey;
@@ -22,6 +24,7 @@ contract CounterTest is Test, Deployers {
 
     Counter hook;
     PoolId poolId;
+    PoolKey controlKey;
 
     function setUp() public {
         // creates the pool manager, utility routers, and test tokens
@@ -31,62 +34,71 @@ contract CounterTest is Test, Deployers {
         // Deploy the hook to an address with the correct flags
         address flags = address(
             uint160(
-                Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG | Hooks.BEFORE_ADD_LIQUIDITY_FLAG
-                    | Hooks.BEFORE_REMOVE_LIQUIDITY_FLAG
+                Hooks.BEFORE_SWAP_FLAG
+                    | Hooks.AFTER_ADD_LIQUIDITY_FLAG
+                    | Hooks.AFTER_ADD_LIQUIDITY_RETURNS_DELTA_FLAG
+                    | Hooks.AFTER_REMOVE_LIQUIDITY_FLAG
+                    | Hooks.AFTER_REMOVE_LIQUIDITY_RETURNS_DELTA_FLAG
             ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
         deployCodeTo("Counter.sol:Counter", abi.encode(manager), flags);
         hook = Counter(flags);
 
+        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
+        manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
         // Create the pool
         key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
         poolId = key.toId();
         manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
-
-        // Provide full-range liquidity to the pool
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 10_000 ether, 0),
-            ZERO_BYTES
-        );
     }
 
-    function testCounterHooks() public {
-        // positions were created in setup()
-        assertEq(hook.beforeAddLiquidityCount(poolId), 1);
-        assertEq(hook.beforeRemoveLiquidityCount(poolId), 0);
+    function testSwaprHooks() public {
+        modifyLiquidityRouter.modifyLiquidity(
+            controlKey,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 3 ether, 0),
+            ZERO_BYTES
+        );
 
-        assertEq(hook.beforeSwapCount(poolId), 0);
-        assertEq(hook.afterSwapCount(poolId), 0);
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 3 ether, 0),
+            ZERO_BYTES
+        );
+
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 6 ether);
+
 
         // Perform a test swap //
         bool zeroForOne = true;
         int256 amountSpecified = -1e18; // negative number indicates exact input swap!
+
+//        vm.prank(controlUser);
+        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
         BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
         // ------------------- //
 
-        assertEq(int256(swapDelta.amount0()), amountSpecified);
+        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
+        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
 
-        assertEq(hook.beforeSwapCount(poolId), 1);
-        assertEq(hook.afterSwapCount(poolId), 1);
     }
 
-    function testLiquidityHooks() public {
-        // positions were created in setup()
-        assertEq(hook.beforeAddLiquidityCount(poolId), 1);
-        assertEq(hook.beforeRemoveLiquidityCount(poolId), 0);
+//    function testAddLiquidityHooks() public {
+////        // positions were created in setup()
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1 ether);
+//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1 ether);
+//    }
 
-        // remove liquidity
-        int256 liquidityDelta = -1e18;
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(
-                TickMath.minUsableTick(60), TickMath.maxUsableTick(60), liquidityDelta, 0
-            ),
-            ZERO_BYTES
-        );
-
-        assertEq(hook.beforeAddLiquidityCount(poolId), 1);
-        assertEq(hook.beforeRemoveLiquidityCount(poolId), 1);
-    }
+//    function testRemoveLiquidityHooks() public {
+//        modifyLiquidityRouter.modifyLiquidity(
+//            controlKey,
+//            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
+//            ZERO_BYTES
+//        );
+//        modifyLiquidityRouter.modifyLiquidity(
+//            key,
+//            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
+//            ZERO_BYTES
+//        );
+//    }
 }
