@@ -3,5 +3,3 @@ export const tokens = [
   { symbol: 'USDC', name: 'USD Coin' },
   { symbol: 'DAI', name: 'Dai' },
 ];
-
-export const lendingConditions = ['Short', 'Long']

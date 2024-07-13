@@ -1,40 +1,65 @@
-import Card from './Card'
-import TokenPairDropDown from './TokenPairDropDown'
-import DropDown from './DropDown'
-import { lendingConditions } from '../constants/tokens'
 import { useState } from 'react'
+import Card from './Card'
+import DropDown from './DropDown'
+import TokenPairDropDown from './TokenPairDropDown'
+import { positionTypes } from '../constants/positionTypes'
 
 export default function Borrow({ onClose }) {
-  const [selectedFromToken, setSelectedFromToken] = useState(null);
-  const [selectedToToken, setSelectedToToken] = useState(null);
+  const [borrowToken, setBorrowToken] = useState(null);
+  const [collateralToken, setCollateralToken] = useState(null);
   const [selectedCondition, setSelectedCondition] = useState(null);
+  const [targetPrice, setTargetPrice] = useState('');
+
+  const validateTokens = (fromToken, toToken) => {
+    return fromToken && toToken && fromToken.symbol !== toToken.symbol;
+  };
+
+  const isBorrowValid = validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice;
+
+  const handleTargetPriceChange = (event) => {
+    setTargetPrice(event.target.value);
+  };
 
   return (
     <div>
       <Card>
-        <h2>Borrow</h2>
         <div className="borrow-container">
           <div className="borrow-token-titles">
-            <div>Taking</div>
+            <div>Borrow</div>
             <div>Collateral</div>
           </div>
           <TokenPairDropDown
-            selectedFromToken={selectedFromToken}
-            onSelectedFromToken={setSelectedFromToken}
-            selectedToToken={selectedToToken}
-            onSelectedToToken={setSelectedToToken}
+            selectedFromToken={borrowToken}
+            onSelectedFromToken={setBorrowToken}
+            selectedToToken={collateralToken}
+            onSelectedToToken={setCollateralToken}
           />
-          By:
-          <DropDown
-            selectedItem={selectedCondition}
-            items={lendingConditions}
-            onSelectItem={setSelectedCondition}
-            renderItem={(condition) => <div>{condition}</div>}
-          />
-          <div className="selected-tokens">
-            {selectedFromToken?.symbol && selectedFromToken?.symbol && (
-              `${selectedFromToken.symbol} / ${selectedToToken.symbol}`
+          <div className="input-group">
+            <label>By:</label>
+            <DropDown
+              selectedItem={selectedCondition}
+              items={positionTypes}
+              onSelectItem={setSelectedCondition}
+              renderItem={(condition) => <div>{condition}</div>}
+            />
+          </div>
+          <div className="input-group">
+            <label>Target Price:</label>
+            <input
+              type="number"
+              value={targetPrice}
+              onChange={handleTargetPriceChange}
+              placeholder="Enter target price"
+              className="target-price-input"
+            />
+            {borrowToken && collateralToken && (
+              <div className="selected-tokens">
+                {collateralToken.symbol} / {borrowToken.symbol} ({collateralToken.symbol} in terms of {borrowToken.symbol})
+              </div>
             )}
+          </div>
+          <div className="actions">
+            <button disabled={!isBorrowValid} onClick={() => alert('Borrow request submitted!')}>Submit</button>
           </div>
         </div>
       </Card>

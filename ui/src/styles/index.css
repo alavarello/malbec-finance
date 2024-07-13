@@ -287,3 +287,15 @@ h1 {
 .error {
   color: #722f37;
 }
+
+.input-group {
+  margin: 0.2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.input-group label {
+  font-weight: bold;
+  margin-bottom: 0.1rem;
+}
