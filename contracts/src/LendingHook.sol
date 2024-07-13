@@ -19,8 +19,10 @@ import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Pool} from "v4-core/src/libraries/Pool.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 import {PoolGetters} from "lib/v4-periphery/contracts/libraries/PoolGetters.sol";
+import {LiquidityAmounts} from "lib/v4-periphery/contracts/libraries/LiquidityAmounts.sol";
 import {SyntheticHook} from "./SyntheticHook.sol";
 import {SyntheticToken} from "./SyntheticToken.sol";
+import {Lock} from "v4-core/src/libraries/Lock.sol";
 
 contract LendingHook is BaseHook {
     bytes constant ZERO_BYTES = new bytes(0);
@@ -99,18 +101,54 @@ contract LendingHook is BaseHook {
         }
     }
 
-    function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
+    function refillVirtualLiquidityBeforeSwap(
+        PoolKey memory key,
+        int24 syntheticTickBeforeSwap,
+        int24 syntheticTickAfterSwap,
+        int256 liquidityDelta
+    ) public {
+        IPoolManager.ModifyLiquidityParams memory addLiquidityParams;
+        // TODO: Check order of the swap
+        // TODO: Test boundary cases
+        addLiquidityParams.tickUpper = syntheticTickBeforeSwap % 60 == 0 ? syntheticTickBeforeSwap : ((syntheticTickBeforeSwap / 60) - 1) * -60;
+        addLiquidityParams.tickLower = syntheticTickAfterSwap % 60 == 0 ? syntheticTickAfterSwap : ((syntheticTickAfterSwap / 60) - 1) * 60;
+        addLiquidityParams.liquidityDelta = liquidityDelta;
+        Lock.unlock();
+        console2.log(addLiquidityParams.tickLower);
+        console2.log(addLiquidityParams.tickLower);
+        console2.log(syntheticTickBeforeSwap);
+        console2.log(syntheticTickAfterSwap / 2);
+        (BalanceDelta result,) = manager.modifyLiquidity(
+            key,
+            addLiquidityParams,
+            new bytes(0)
+        );
+        Lock.lock();
+        key.currency0.settle(manager, address(this), uint128(-result.amount0()), false);
+        key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
+    }
+
+    function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata data)
     external
     override
     returns (bytes4, BeforeSwapDelta, uint24)
     {
-        // TODO: Mint synthetic A
-
         // TODO: Swap tokens in synthetic pool
+        (uint160 synthSqrtPriceX96BeforeSwap,int24 syntheticTickBeforeSwap,,) = manager.getSlot0(syntheticPoolKey.toId());
+        BalanceDelta synthSwapDelta = manager.swap(syntheticPoolKey, params, data);
+        (uint160 synthSqrtPriceX96AfterSwap,int24 syntheticTickAfterSwap,,) = manager.getSlot0(syntheticPoolKey.toId());
+        syntheticPoolKey.currency0.settle(manager, address(this), uint128(-synthSwapDelta.amount0()), false);
+        manager.take(syntheticPoolKey.currency1, address(this), uint128(synthSwapDelta.amount1()));
 
-        // TODO: Burn synthetic B
+        uint256 liquidityDelta = LiquidityAmounts.getLiquidityForAmount1(
+            synthSqrtPriceX96BeforeSwap,
+            synthSqrtPriceX96AfterSwap,
+            uint128(synthSwapDelta.amount1())
+        );
 
-        // TODO: Add liquidity to this pool from lender
+        // TODO: OneToZero Swap
+        refillVirtualLiquidityBeforeSwap(key, syntheticTickBeforeSwap, syntheticTickAfterSwap, int(liquidityDelta));
+
         // data of synthetic swap
 
 //        (uint160 sqrtPriceX96, int24 tickCurrent,,) = manager.getSlot0(key.toId());
@@ -152,6 +190,11 @@ contract LendingHook is BaseHook {
         BalanceDelta delta,
         bytes calldata data
     ) external override returns (bytes4, BalanceDelta) {
+        console2.log("Baaaa");
+        if(Lock.isUnlocked()) {
+            console2.log("Here");
+            return (BaseHook.afterAddLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
+        }
 
         // We create the assets in the Synthetic Pool and send the results
         IPoolManager.ModifyLiquidityParams memory synthParams;
@@ -191,7 +234,6 @@ contract LendingHook is BaseHook {
             new bytes(0)
         );
 
-        console2.log(delta.amount0());
         manager.take(syntheticPoolKey.currency0, address(this), uint128(result.amount0()));
         manager.take(syntheticPoolKey.currency1, address(this), uint128(result.amount1()));
 

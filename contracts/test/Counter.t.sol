@@ -56,12 +56,12 @@ contract CounterTest is Test, Deployers {
         deployCodeTo("LendingHook.sol:LendingHook", abi.encode(manager), flags);
         hook = LendingHook(flags);
         // Initialize a bytes array with length 20
-        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
+        key = PoolKey(currency0, currency1, 0, 60, IHooks(hook));
         manager.initialize(key, SQRT_PRICE_1_1, abi.encodePacked(address(synthHook)));
     }
 
     function deployAndInitializeControlPool() internal {
-        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
+        controlKey = PoolKey(currency0, currency1, 0, 60, IHooks(address(0x0)));
         manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
     }
 
@@ -72,6 +72,18 @@ contract CounterTest is Test, Deployers {
 
         deployAndInitializeLendingPool();
         deployAndInitializeControlPool();
+
+        modifyLiquidityRouter.modifyLiquidity(
+            controlKey,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 2 ether, 0),
+            ZERO_BYTES
+        );
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
+            ZERO_BYTES
+        );
     }
 
     function testAfterInitialize() public {
@@ -79,54 +91,42 @@ contract CounterTest is Test, Deployers {
         assertEq(address(hook), address(0x4444000000000000000000000000000000001583));
     }
 
+    function testAddLiquidity() public {
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1 ether);
+
+        (Currency synthCurrency0, Currency synthCurrency1,,,) = hook.syntheticPoolKey();
+        assertEq(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 2 ether);
+        assertEq(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 2 ether);
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 0.5 ether, 0),
+            ZERO_BYTES
+        );
+
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 3.5 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1.5 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 3.5 ether);
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1.5 ether);
+
+        assertEq(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 3 ether);
+
+    }
+
     function testSwaprHooks() public {
-        modifyLiquidityRouter.modifyLiquidity(
-            controlKey,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
-            ZERO_BYTES
-        );
-
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
-            ZERO_BYTES
-        );
-
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
-            ZERO_BYTES
-        );
-
-//
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 9 ether);
-
-
         // Perform a test swap //
         bool zeroForOne = true;
-        int256 amountSpecified = 0.01 ether; // negative number indicates exact input swap!
-//
-////        vm.prank(controlUser);
-//        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta1 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta2 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta3 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta4 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta5 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta6 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta7 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta8 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-//        BalanceDelta swapDelta9 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-        // ------------------- //
+        int256 amountSpecified = 0.000000001 ether; // negative number indicates exact input swap!
 
-        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 3 ether);
+        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
+        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
 
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1.5 ether);
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 10 ether);
-
-//        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
-//        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
+        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
+        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
 
     }
 
@@ -136,16 +136,28 @@ contract CounterTest is Test, Deployers {
 //        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1 ether);
 //    }
 
-//    function testRemoveLiquidityHooks() public {
-//        modifyLiquidityRouter.modifyLiquidity(
-//            controlKey,
-//            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
-//            ZERO_BYTES
-//        );
-//        modifyLiquidityRouter.modifyLiquidity(
-//            key,
-//            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
-//            ZERO_BYTES
-//        );
-//    }
+    function testRemoveLiquidityHooks() public {
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 3 ether);
+        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1 ether);
+
+        (Currency synthCurrency0, Currency synthCurrency1,,,) = hook.syntheticPoolKey();
+        assertEq(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 2 ether);
+        assertEq(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 2 ether);
+
+        modifyLiquidityRouter.modifyLiquidity(
+            key,
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -0.5 ether, 0),
+            ZERO_BYTES
+        );
+
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 1.5 ether);
+//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 0.5 ether);
+//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 1.5 ether);
+//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 0.5 ether);
+
+//        assertEq(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 1 ether);
+//        assertEq(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 1 ether);
+    }
 }
