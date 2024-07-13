@@ -1,29 +1,13 @@
-import { ReactComponent as UniswapLogo } from '../assets/uniswap.svg'
-import { ReactComponent as PancakeSwapLogo } from '../assets/pancakeswap.svg'
-import { EXCHANGES } from '../constants/exchanges'
+import { useExchange } from '../stores/exchange'
+import ExchangeToggle from './ExchangeToggle'
 
-export default function ExchangeSelector({ selectedExchange, onSelectExchange }) {
-  const toggleExchange = () => {
-      const newExchange = selectedExchange === EXCHANGES.UNISWAP
-        ? EXCHANGES.PANCAKESWAP
-        : EXCHANGES.UNISWAP
-      onSelectExchange(newExchange)
-  }
+export default function ExchangeSelector() {
+  const { exchange, toggleExchange } = useExchange()
 
   return (
-    <div className="exchange-selector-container">
-      <label className="exchange-selector-toggle-switch">
-        <input
-          type="checkbox"
-          checked={selectedExchange === EXCHANGES.PANCAKESWAP}
-          onChange={toggleExchange}
-        />
-        <span className="exchange-selector-slider">
-          <span className="exchange-selector-logo">
-            {selectedExchange === EXCHANGES.UNISWAP ? <UniswapLogo /> : <PancakeSwapLogo />}
-          </span>
-        </span>
-      </label>
-    </div>
+    <ExchangeToggle
+      selectedExchange={exchange}
+      onSelectExchange={toggleExchange}
+    />
   )
 }

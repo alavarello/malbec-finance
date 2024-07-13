@@ -2,15 +2,17 @@ import { useState } from 'react'
 import Card from './Card'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
-import ExchangeSelector from './ExchangeSelector'
+import ExchangeToggle from './ExchangeToggle'
 import { LENDING_CONDITIONS } from '../constants/lending'
-import { EXCHANGES } from '../constants/exchanges'
+import { useExchange } from '../stores/exchange'
 
 export default function Borrow({ onClose }) {
+  const { exchange } = useExchange()
+
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
   const [selectedCondition, setSelectedCondition] = useState(null)
-  const [selectedExchange, setSelectedExchange] = useState(EXCHANGES.UNISWAP)
+  const [selectedExchange, setSelectedExchange] = useState(exchange)
   const [targetPrice, setTargetPrice] = useState('')
 
   const validateTokens = (fromToken, toToken) => {
@@ -27,7 +29,7 @@ export default function Borrow({ onClose }) {
     <div>
       <Card>
         <div className="borrow-container">
-          <ExchangeSelector
+          <ExchangeToggle
             selectedExchange={selectedExchange}
             onSelectExchange={setSelectedExchange}
           />

@@ -24,6 +24,7 @@ export default function PositionList() {
           <li>
             {positions.map((position) => (
               <Position
+                key={`${position.pool.poolId}-${position.debt.currency}`}
                 borrower={address}
                 pool={position.pool}
                 colateral={{
