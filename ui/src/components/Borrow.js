@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Card from './Card'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
-import { positionTypes } from '../constants/positionTypes'
+import { LENDING_CONDITIONS } from '../constants/lending'
 
 export default function Borrow({ onClose }) {
   const [borrowToken, setBorrowToken] = useState(null);
@@ -38,7 +38,7 @@ export default function Borrow({ onClose }) {
             <label>By:</label>
             <DropDown
               selectedItem={selectedCondition}
-              items={positionTypes}
+              items={Object.values(LENDING_CONDITIONS)}
               onSelectItem={setSelectedCondition}
               renderItem={(condition) => <div>{condition}</div>}
             />
