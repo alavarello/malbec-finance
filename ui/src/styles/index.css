@@ -299,3 +299,76 @@ h1 {
   font-weight: bold;
   margin-bottom: 0.1rem;
 }
+
+.exchange-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.exchange-selector-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 80px;
+  height: 40px;
+}
+
+.exchange-selector-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.exchange-selector-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ff007a;
+  transition: 0.4s;
+  border-radius: 40px;
+}
+
+.exchange-selector-slider:before {
+  position: absolute;
+  content: "";
+  height: 32px;
+  width: 32px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.exchange-selector-toggle-switch input:checked + .exchange-selector-slider {
+  background-color: #1fc7d4;
+}
+
+.exchange-selector-toggle-switch input:checked + .exchange-selector-slider:before {
+  transform: translateX(40px);
+}
+
+.exchange-selector-logo {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  transition: 0.4s;
+  z-index: 1;
+}
+
+.exchange-selector-toggle-switch input:checked + .exchange-selector-slider .exchange-selector-logo {
+  left: 46px;
+}
+
+.exchange-selector-name {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: capitalize;
+  color: #333;
+}
