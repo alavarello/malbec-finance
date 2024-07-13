@@ -1,5 +1,8 @@
 import ReactDOM from 'react-dom/client'
 import WalletConnect from './components/WalletConnect'
+import ButtonModal from './components/ButtonModal'
+import Lend from './components/Lend'
+import Borrow from './components/Borrow'
 import { ReactComponent as Wine } from './assets/Wine.svg'
 import { ReactComponent as Barrel } from './assets/Barrel.svg'
 import { WalletProvider } from './stores/wallet'
@@ -18,14 +21,14 @@ root.render(
     </header>
     <main>
       <div className="malbec">
-        <button className="cta">
+        <ButtonModal className="cta" modal={Lend}>
           <Barrel />
           <span>Lending</span>
-        </button>
-        <button className="cta">
+        </ButtonModal>
+        <ButtonModal className="cta" modal={Borrow}>
           <Wine />
           <span>Borrowing</span>
-        </button>
+        </ButtonModal>
       </div>
     </main>
   </WalletProvider>
