@@ -28,6 +28,11 @@ h1 {
   margin: 0;
 }
 
+.user {
+  display: flex;
+  gap: .5rem;
+}
+
 .wallet-connect {
   display: flex;
   align-items: center;
