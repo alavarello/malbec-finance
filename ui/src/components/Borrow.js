@@ -4,13 +4,13 @@ import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
 import ExchangeSelector from './ExchangeSelector'
 import { LENDING_CONDITIONS } from '../constants/lending'
-
+import { EXCHANGES } from '../constants/exchanges'
 
 export default function Borrow({ onClose }) {
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
   const [selectedCondition, setSelectedCondition] = useState(null)
-  const [selectedExchange, setSelectedExchange] = useState('uniswap')
+  const [selectedExchange, setSelectedExchange] = useState(EXCHANGES.UNISWAP)
   const [targetPrice, setTargetPrice] = useState('')
 
   const validateTokens = (fromToken, toToken) => {
@@ -27,7 +27,10 @@ export default function Borrow({ onClose }) {
     <div>
       <Card>
         <div className="borrow-container">
-          <ExchangeSelector onSelectItem={setSelectedExchange} defaultSelectedItem={'uniswap'} onClose={onClose} />
+          <ExchangeSelector
+            selectedExchange={selectedExchange}
+            onSelectExchange={setSelectedExchange}
+          />
           <div className="borrow-token-titles">
             <div>Borrow</div>
             <div>Collateral</div>

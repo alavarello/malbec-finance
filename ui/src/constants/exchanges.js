@@ -1,0 +1,4 @@
+export const EXCHANGES = {
+  UNISWAP: 'UNISWAP',
+  PANCAKESWAP: 'PANCAKESWAP',
+}
