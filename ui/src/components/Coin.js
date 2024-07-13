@@ -3,6 +3,7 @@ import Spinner from './Spinner'
 import ErrorButton from './ErrorButton'
 import useCoinPrice from '../hooks/useCoinPrice'
 import { COINS } from '../constants/coins'
+import '../styles/coin.css'
 
 export default function Coin({ chainId, currency, value }) {
   const {
