@@ -7,8 +7,8 @@ export default function TokenDropDown({ selectedToken, onSelectToken }) {
     symbol,
     name: token.name,
     key: `${symbol} - ${token.name}`,
-    display: <TokenDisplay symbol={symbol} name={token.name} />,
-  }))
+    display: <TokenDisplay symbol={symbol} name={token.name} icon={token.icon} />,
+  }));
 
   return (
     <DropDown
