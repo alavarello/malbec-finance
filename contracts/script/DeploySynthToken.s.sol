@@ -24,7 +24,6 @@ contract CounterScript is Script {
         }
     }
 
-
     function testLifecycle(
     ) external {
         (SyntheticToken token0, SyntheticToken token1) = deployTokens();
