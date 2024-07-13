@@ -1,0 +1,102 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+main {
+  flex-grow: 1;
+  background: linear-gradient(to bottom, white, #722f37);
+}
+
+h1 {
+  background: linear-gradient(to right, #87cefa, #722f37);
+  background-clip: text;
+  color: transparent;
+  margin: 0;
+}
+
+.wallet-connect {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.wallet-connect button {
+  cursor: pointer;
+  color: white;
+  background-color: #87cefa;
+  font-weight: bold;
+  border-width: 0;
+  border-radius: 1rem;
+  padding: .5rem;
+}
+
+.wallet-connect button:hover {
+  background-color: #64bef5;
+}
+
+.wallet-connect .address {
+  font-family: monospace;
+}
+
+.malbec {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 4rem 0;
+}
+
+.cta {
+  cursor: pointer;
+  color: black;
+  background-color: transparent;
+  padding: 3rem;
+  border-width: 0;
+  border-radius: 50%;
+  text-decoration: none;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bolder;
+  font-size: smaller;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  aspect-ratio: 1;
+}
+
+@keyframes wine-hover {
+  0% {
+    color: black;
+    background-color: transparent;
+  }
+  100% {
+    color: white;
+    background-color: #722f37;
+  }
+}
+
+.cta:hover {
+  color: white;
+  background-color: #722f37;
+  animation: wine-hover ease 1s;
+}
+
+.cta svg {
+  width: 10rem;
+  height: 10rem;
+}
+
+.cta span {
+  display: block;
+}
