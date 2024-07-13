@@ -1,15 +1,16 @@
-import { useState } from 'react'
-import TokenDropDown from './TokenDropDown'
 import { tokens } from '../constants/tokens'
+import TokenDropDown from './TokenDropDown'
 
-export default function TokenPairDropDown({ onClose }) {
-  const [selectedFromToken, setSelectedFromToken] = useState(null);
-  const [selectedToToken, setSelectedToToken] = useState(null);
-
+export default function TokenPairDropDown({
+  selectedFromToken,
+  onSelectedFromToken,
+  selectedToToken,
+  onSelectedToToken
+}) {
   return (
-    <div className="token-selector-container">
-      <TokenDropDown selectedToken={selectedFromToken} tokens={tokens} onSelectToken={setSelectedFromToken}/>
-      <TokenDropDown selectedToken={selectedToToken} tokens={tokens} onSelectToken={setSelectedToToken}/>
+    <div className="token-pair-selector-container">
+      <TokenDropDown selectedToken={selectedFromToken} tokens={tokens} onSelectToken={onSelectedFromToken}/>
+      <TokenDropDown selectedToken={selectedToToken} tokens={tokens} onSelectToken={onSelectedToToken}/>
     </div>
   )
 }
