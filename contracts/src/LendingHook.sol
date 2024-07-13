@@ -19,10 +19,12 @@ import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Pool} from "v4-core/src/libraries/Pool.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 import {PoolGetters} from "lib/v4-periphery/contracts/libraries/PoolGetters.sol";
+import {SyntheticHook} from "./SyntheticHook.sol";
+import {SyntheticToken} from "./SyntheticToken.sol";
 
 contract LendingHook is BaseHook {
     bytes constant ZERO_BYTES = new bytes(0);
-
+    uint256 MAX_INT = type(uint256).max;
 
     using PoolIdLibrary for PoolKey;
     using CurrencyLibrary for Currency;
@@ -31,15 +33,15 @@ contract LendingHook is BaseHook {
     using PoolGetters for IPoolManager;
     using TickBitmap for mapping(int16 => uint256);
 
-    bool public lock = false;
     PoolKey public syntheticPoolKey;
+    SyntheticHook public synthHook;
 
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
             beforeInitialize: false,
-            afterInitialize: false,
+            afterInitialize: true,
             beforeAddLiquidity: false,
             afterAddLiquidity: true,
             beforeRemoveLiquidity: false,
@@ -55,17 +57,46 @@ contract LendingHook is BaseHook {
         });
     }
 
-    function convertSqrtPriceX96ToPrice(
-        uint160 sqrtPriceX96
-    ) public pure returns (uint256) {
-        // Convert the sqrtPriceX96 to a regular price using Uniswap's formula.
-        uint256 price = (uint256(sqrtPriceX96) * uint256(sqrtPriceX96)) >> 96;
-        return price;
+    function afterInitialize(address sender, PoolKey calldata key, uint160 sqrtPriceX96, int24, bytes calldata data)
+    external
+    override
+    returns (bytes4)
+    {
+        // TODO: Support native Eth
+        require(!key.currency0.isNative());
+        require(!key.currency1.isNative());
+
+        // TODO: Add M at the beginning
+        IERC20 token0 = IERC20(Currency.unwrap(key.currency0));
+        IERC20 token1 = IERC20(Currency.unwrap(key.currency1));
+        // TODO: Check decimals and other things
+        SyntheticToken synthToken0 = new SyntheticToken(token0.name(), MAX_INT);
+        SyntheticToken synthToken1 = new SyntheticToken(token1.name(), MAX_INT);
+
+        synthToken0.approve(address(manager), MAX_INT);
+        synthToken1.approve(address(manager), MAX_INT);
+
+        synthHook = SyntheticHook(bytesToAddress(data));
+
+        Currency synthCurrency0 = Currency.wrap(address(synthToken0));
+        Currency synthCurrency1 = Currency.wrap(address(synthToken1));
+
+        syntheticPoolKey = PoolKey(synthCurrency1, synthCurrency0, key.fee, key.tickSpacing, IHooks(synthHook));
+        // TODO: Check sqrtPriceX96
+        manager.initialize(syntheticPoolKey, sqrtPriceX96, ZERO_BYTES);
+        return IHooks.afterInitialize.selector;
     }
 
     // TODO: Add owner
     function addSyntheticPoolKey(PoolKey calldata poolKey) external {
         syntheticPoolKey = poolKey;
+    }
+
+    function bytesToAddress(bytes calldata data) private pure returns (address addr) {
+        bytes memory b = data;
+        assembly {
+            addr := mload(add(b, 20))
+        }
     }
 
     function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
@@ -81,8 +112,6 @@ contract LendingHook is BaseHook {
 
         // TODO: Add liquidity to this pool from lender
         // data of synthetic swap
-        lockCall();
-        lockCall();
 
 //        (uint160 sqrtPriceX96, int24 tickCurrent,,) = manager.getSlot0(key.toId());
 ////    (uint128 liquidityGross, int128 liquidityNet,,) = manager.getTickInfo(key.toId(), tickCurrent);
@@ -112,30 +141,33 @@ contract LendingHook is BaseHook {
 //        key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
 
 
-        unlockCall();
 
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
-    }
-
-    function lockCall() internal {
-        lock = true;
-    }
-
-    function unlockCall() internal {
-        lock = false;
     }
 
     function afterAddLiquidity(
         address sender,
         PoolKey calldata key,
-        IPoolManager.ModifyLiquidityParams calldata bla,
+        IPoolManager.ModifyLiquidityParams calldata params,
         BalanceDelta delta,
-        bytes calldata bla2
+        bytes calldata data
     ) external override returns (bytes4, BalanceDelta) {
-        if(lock) {
-            return (BaseHook.afterAddLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
-        }
 
+        // We create the assets in the Synthetic Pool and send the results
+        IPoolManager.ModifyLiquidityParams memory synthParams;
+        synthParams.salt = params.salt;
+        synthParams.tickLower = params.tickLower;
+        synthParams.tickUpper = params.tickUpper;
+        synthParams.liquidityDelta = params.liquidityDelta * 2;
+        (BalanceDelta result,) = manager.modifyLiquidity(
+            syntheticPoolKey,
+            synthParams,
+            new bytes(0)
+        );
+        syntheticPoolKey.currency0.settle(manager, address(this), uint128(-result.amount0()), false);
+        syntheticPoolKey.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
+
+        // We take the currency
         manager.take(key.currency0, address(this), uint128(-delta.amount0()));
         manager.take(key.currency1, address(this), uint128(-delta.amount1()));
         return (BaseHook.afterAddLiquidity.selector, toBalanceDelta(-delta.amount0(), -delta.amount1()));
@@ -144,16 +176,29 @@ contract LendingHook is BaseHook {
     function afterRemoveLiquidity(
         address sender,
         PoolKey calldata key,
-        IPoolManager.ModifyLiquidityParams calldata bla,
+        IPoolManager.ModifyLiquidityParams calldata params,
         BalanceDelta delta,
-        bytes calldata bla2
+        bytes calldata data
     ) external override returns (bytes4, BalanceDelta) {
-        // TODO: Withdraw and burn from the synthetic pool
+        IPoolManager.ModifyLiquidityParams memory synthParams;
+        synthParams.salt = params.salt;
+        synthParams.tickLower = params.tickLower;
+        synthParams.tickUpper = params.tickUpper;
+        synthParams.liquidityDelta = params.liquidityDelta * 2;
+        (BalanceDelta result,) = manager.modifyLiquidity(
+            syntheticPoolKey,
+            synthParams,
+            new bytes(0)
+        );
 
-        // TODO: + transfer with fee (calculated from synthetic)
-        manager.take(key.currency0, address(sender), uint128(delta.amount0()));
-        manager.take(key.currency1, address(sender), uint128(delta.amount1()));
+        console2.log(delta.amount0());
+        manager.take(syntheticPoolKey.currency0, address(this), uint128(result.amount0()));
+        manager.take(syntheticPoolKey.currency1, address(this), uint128(result.amount1()));
 
-        return (BaseHook.beforeRemoveLiquidity.selector, toBalanceDelta(delta.amount0(), delta.amount1()));
+        key.currency0.settle(manager, address(this), uint128(delta.amount0()), false);
+        key.currency1.settle(manager, address(this), uint128(delta.amount0()), false);
+
+        // TODO: fee (calculated from synthetic)
+        return (BaseHook.afterRemoveLiquidity.selector, toBalanceDelta(-delta.amount0(), -delta.amount1()));
     }
 }

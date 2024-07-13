@@ -26,47 +26,43 @@ contract CounterTest is Test, Deployers {
     LendingHook hook;
     SyntheticHook synthHook;
 
-    PoolId poolId;
     PoolKey controlKey;
-    PoolKey synthKey;
 
-    function deployAndInitializeSyntheticPool() internal {
+    function deploySyntheticHook() public {
         address flags = address(
             uint160(
                 Hooks.BEFORE_SWAP_FLAG
                 | Hooks.BEFORE_ADD_LIQUIDITY_FLAG
                 | Hooks.BEFORE_REMOVE_LIQUIDITY_FLAG
-            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
+            ) ^ (0x4444 << 145) // Namespace the hook to avoid collisions
         );
+        deployCodeTo("SyntheticHook.sol:SyntheticHook", abi.encode(manager), flags);
         synthHook = SyntheticHook(flags);
-        synthKey = PoolKey(currency0, currency1, 3000, 60, IHooks(synthHook));
-        manager.initialize(synthKey, SQRT_PRICE_1_1, ZERO_BYTES);
     }
 
     function deployAndInitializeLendingPool() internal {
-        deployAndInitializeSyntheticPool();
+        deploySyntheticHook();
         // Deploy the hook to an address with the correct flags
         address flags = address(
             uint160(
-//                Hooks.BEFORE_INITIALIZE_FLAG
-//                    | Hooks.BEFORE_SWAP_FLAG
-                Hooks.BEFORE_SWAP_FLAG
+                Hooks.AFTER_INITIALIZE_FLAG
+                | Hooks.BEFORE_SWAP_FLAG
                 | Hooks.AFTER_ADD_LIQUIDITY_FLAG
                 | Hooks.AFTER_ADD_LIQUIDITY_RETURNS_DELTA_FLAG
                 | Hooks.AFTER_REMOVE_LIQUIDITY_FLAG
                 | Hooks.AFTER_REMOVE_LIQUIDITY_RETURNS_DELTA_FLAG
             ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
+        deployCodeTo("LendingHook.sol:LendingHook", abi.encode(manager), flags);
         hook = LendingHook(flags);
-        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
-        manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
-//        hook.addSyntheticPoolKey(synthKey);
+        // Initialize a bytes array with length 20
+        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
+        manager.initialize(key, SQRT_PRICE_1_1, abi.encodePacked(address(synthHook)));
     }
 
     function deployAndInitializeControlPool() internal {
-        key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
-        poolId = key.toId();
-        manager.initialize(key, SQRT_PRICE_1_1, ZERO_BYTES);
+        controlKey = PoolKey(currency0, currency1, 3000, 60, IHooks(address(0x0)));
+        manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
     }
 
     function setUp() public {
@@ -78,38 +74,27 @@ contract CounterTest is Test, Deployers {
         deployAndInitializeControlPool();
     }
 
-//    function testInitialize() public {
-//        assertEq(hook.syntheticPoolId(), controlKey.toId());
-//    }
+    function testAfterInitialize() public {
+        assertEq(address(hook.synthHook()), address(0x8888000000000000000000000000000000000a80));
+        assertEq(address(hook), address(0x4444000000000000000000000000000000001583));
+    }
 
     function testSwaprHooks() public {
         modifyLiquidityRouter.modifyLiquidity(
             controlKey,
-            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
             ZERO_BYTES
         );
 
         modifyLiquidityRouter.modifyLiquidity(
             key,
-            IPoolManager.ModifyLiquidityParams(-600, 600, 6 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
             ZERO_BYTES
         );
 
         modifyLiquidityRouter.modifyLiquidity(
             key,
-            IPoolManager.ModifyLiquidityParams(-180, 120, 2 ether, 0),
-            ZERO_BYTES
-        );
-
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(60, 120, 2 ether, 0),
-            ZERO_BYTES
-        );
-
-        modifyLiquidityRouter.modifyLiquidity(
-            key,
-            IPoolManager.ModifyLiquidityParams(60, 180, 6 ether, 0),
+            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), -1 ether, 0),
             ZERO_BYTES
         );
 
@@ -123,8 +108,8 @@ contract CounterTest is Test, Deployers {
 //
 ////        vm.prank(controlUser);
 //        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
-        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
-        BalanceDelta swapDelta1 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+//        BalanceDelta swapDelta1 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
 //        BalanceDelta swapDelta2 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
 //        BalanceDelta swapDelta3 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
 //        BalanceDelta swapDelta4 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);

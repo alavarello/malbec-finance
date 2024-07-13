@@ -27,17 +27,10 @@ contract SyntheticHook is BaseHook {
     using PoolGetters for IPoolManager;
     using TickBitmap for mapping(int16 => uint256);
 
-    // NOTE: ---------------------------------------------------------
-    // state variables should typically be unique to a pool
-    // a single hook contract should be able to service multiple pools
-    // ---------------------------------------------------------------
-
-
     constructor(IPoolManager _poolManager) BaseHook(_poolManager) {}
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
         return Hooks.Permissions({
-            // TODO: Initialize in the Lending Hook
             beforeInitialize: false,
             afterInitialize: false,
             beforeAddLiquidity: true,
@@ -59,27 +52,27 @@ contract SyntheticHook is BaseHook {
     function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata)
     external
     override
+    onlyValidPools(key.hooks)
     returns (bytes4, BeforeSwapDelta, uint24)
     {
-
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
 
-    function beforeAddLiquidity(address sender, PoolKey calldata, IPoolManager.ModifyLiquidityParams calldata, bytes calldata)
+    function beforeAddLiquidity(address sender, PoolKey calldata key, IPoolManager.ModifyLiquidityParams calldata, bytes calldata)
     external
     override
+    onlyValidPools(key.hooks)
     returns (bytes4)
     {
-        console2.log(sender);
         return BaseHook.beforeAddLiquidity.selector;
     }
 
     function beforeRemoveLiquidity(
         address,
-        PoolKey calldata,
+        PoolKey calldata key,
         IPoolManager.ModifyLiquidityParams calldata,
         bytes calldata
-    ) external override returns (bytes4) {
+    ) external override onlyValidPools(key.hooks) returns (bytes4) {
         return BaseHook.beforeRemoveLiquidity.selector;
     }
 }
