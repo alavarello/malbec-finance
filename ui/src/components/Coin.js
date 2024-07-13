@@ -1,4 +1,4 @@
-import { parseUnits } from 'ethers'
+import { formatUnits, parseUnits } from 'ethers'
 import Spinner from './Spinner'
 import ErrorButton from './ErrorButton'
 import useCoinPrice from '../hooks/useCoinPrice'
@@ -21,12 +21,18 @@ export default function Coin({ chainId, currency, value }) {
     <div className="coin">
       <div className="icon"></div>
       <div className="value">
-        {price && (
-          <div className="price">${amount * price}</div>
+        {(price || priceLoading || priceError) && (
+          <div className="price">
+            {price && !priceLoading && !priceError && (
+              <div className="price">
+                ${formatUnits(amount * price, decimals)}
+              </div>
+            )}
+            {priceLoading && !priceError && <Spinner size={12} />}
+            {priceError && !priceLoading && <ErrorButton message={priceError} />}
+          </div>
         )}
-        {priceLoading && <Spinner size={12} />}
-        {priceError && <ErrorButton message={priceError} />}
-        <div className="amount">{amount} {currency}</div>
+        <div className="amount">{formatUnits(amount, decimals)} {currency}</div>
       </div>
     </div>
   )
