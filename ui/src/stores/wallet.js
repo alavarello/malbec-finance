@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from 'react'
 import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
 
 const WalletContext = createContext({
+  chainId: 1,
   address: null,
   isConnected: false,
   connect() {},
@@ -10,10 +11,10 @@ const WalletContext = createContext({
 
 export const useWallet = () => useContext(WalletContext)
 
-export function WalletProvider({ children }) {
+export function WalletProvider({ children, defaultChainId = 1 }) {
   const [disconnected, setDisconnected] = useState(true)
   const { open } = useWeb3Modal()
-  const { isConnected, address } = useWeb3ModalAccount()
+  const { chainId, isConnected, address } = useWeb3ModalAccount()
 
   function connect() {
     setDisconnected(false)
@@ -27,11 +28,13 @@ export function WalletProvider({ children }) {
   }
 
   const value = useMemo(() => ({
+    chainId: chainId ?? defaultChainId,
     address: isConnected && !disconnected ? address : null,
     isConnected: isConnected && !disconnected,
     connect,
     disconnect,
   }), [
+    chainId,
     address,
     isConnected,
     connect,

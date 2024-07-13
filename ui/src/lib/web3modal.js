@@ -1,14 +1,7 @@
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
+import { DEFAULT_CHAIN_ID, CHAINS } from '../constants/chains'
 
 const projectId = process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID
-
-const mainnet = {
-  chainId: 1,
-  name: 'Ethereum',
-  currency: 'ETH',
-  explorerUrl: 'https://eth.blockscout.com',
-  rpcUrl: 'https://cloudflare-eth.com',
-}
 
 const metadata = {
   name: 'Malbec Finance',
@@ -20,12 +13,12 @@ const metadata = {
 const ethersConfig = defaultConfig({
   metadata,
   rpcUrl: 'https://cloudflare-eth.com',
-  defaultChainId: 1,
+  defaultChainId: DEFAULT_CHAIN_ID,
 })
 
 const modal = createWeb3Modal({
   ethersConfig,
-  chains: [mainnet],
+  chains: CHAINS,
   projectId,
   enableAnalytics: false,
   enableOnramp: false,

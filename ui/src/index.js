@@ -6,6 +6,7 @@ import Borrow from './components/Borrow'
 import { ReactComponent as Wine } from './assets/Wine.svg'
 import { ReactComponent as Barrel } from './assets/Barrel.svg'
 import { WalletProvider } from './stores/wallet'
+import { DEFAULT_CHAIN_ID } from './constants/chains'
 import './lib/web3modal'
 import './styles/index.css'
 
@@ -14,7 +15,7 @@ const root = ReactDOM.createRoot(
 )
 
 root.render(
-  <WalletProvider>
+  <WalletProvider defaultChainId={DEFAULT_CHAIN_ID}>
     <header>
       <h1>Malbec Finance</h1>
       <WalletConnect />
