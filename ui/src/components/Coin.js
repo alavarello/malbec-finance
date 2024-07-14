@@ -31,7 +31,7 @@ export default function Coin({ chainId, currency, value }) {
     error: priceError,
     decimals: priceDecimals,
   } = useCoinPrice({
-    chainId,
+    chainId: 1,
     currency,
   })
 

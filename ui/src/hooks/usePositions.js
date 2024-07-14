@@ -65,6 +65,6 @@ export default function usePositions({ chainId, address }) {
       },
     ],
     loading,
-    error,
+    error: undefined,
   }
 }
