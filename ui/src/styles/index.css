@@ -6,6 +6,10 @@ body {
   padding: 0;
 }
 
+body.overlay-active {
+  overflow: hidden;
+}
+
 #root {
   position: relative;
   z-index: 1;
@@ -155,7 +159,7 @@ h1 {
 
 .overlay {
   z-index: 1;
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
