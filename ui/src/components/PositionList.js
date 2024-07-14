@@ -1,7 +1,6 @@
 import Position from './Position'
 import { useWallet } from '../stores/wallet'
 import usePositions from '../hooks/usePositions'
-import '../styles/positions.css'
 import ErrorButton from './ErrorButton'
 
 export default function PositionList() {

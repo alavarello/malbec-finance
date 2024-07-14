@@ -8,7 +8,6 @@ import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens, fromDecimals } from '../utils/liquidity'
-// import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { COINS } from '../constants/coins'
 import {EthersLender} from "../lib/lender";
 
@@ -22,7 +21,6 @@ export default function Borrow({ onClose }) {
   const [selectedExchange, setSelectedExchange] = useState(exchange)
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0);
-  // const [processedTicks, setProcessedTicks] = useState([]);
 
   const pool = useLendingPool({ currency0: borrowToken?.symbol, currency1: collateralToken?.symbol });
 
@@ -114,52 +112,8 @@ export default function Borrow({ onClose }) {
           {!isConnected && (
             <div className="error">Connect your wallet to Borrow</div>
           )}
-          {/*processedTicks && false && (
-            <div className="liquidity-chart">
-              <ResponsiveContainer width="80%" height={300}>
-                <BarChart data={processedTicks}>
-                  <XAxis
-                    dataKey="price"
-                    tickFormatter={(value) => value.toFixed(6)}
-                  />
-                  <YAxis
-                    tickFormatter={(value) => value.toLocaleString()}
-                  />
-                  <Tooltip
-                    formatter={(value) => value.toLocaleString()}
-                    labelFormatter={(label) => `Price: ${label}`}
-                  />
-                  <Bar dataKey="liquidityActiveChart" fill="#2172E5">
-                    {processedTicks.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.isActive ? '#F51E87' : '#2172E5'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )*/}
         </div>
       </Card>
     </div>
   )
 }
-
-// function processTicksForChart(pool, token) {
-//   const currentTick = pool.ticks.find(tick => tick.tick === 0);
-//
-//   if (!currentTick) {
-//     return [];
-//   }
-//
-//   const currentTickIndex = currentTick.tick;
-//   return pool.ticks.map(tick => ({
-//     tickIdx: tick.tick - currentTickIndex,
-//     liquidityActive: parseFloat(tick.liquidityNet),
-//     liquidityNet: parseFloat(tick.liquidityNet),
-//     price: parseFloat(pool.currency0 === token ? tick.price0 : tick.price1),
-//     price0: parseFloat(tick.price0),
-//     price1: parseFloat(tick.price1),
-//     liquidityActiveChart: parseFloat(tick.liquidityNet),
-//     isActive: tick.tick === currentTick.tick,
-//   }));
-// }
