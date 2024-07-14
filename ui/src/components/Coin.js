@@ -6,20 +6,23 @@ import { COINS } from '../constants/coins'
 import '../styles/coin.css'
 
 const CoinIcon = ({ currency }) => {
-  const coin = COINS[currency];
-  if (!coin) return <div>Unknown Coin</div>;
+  const coin = COINS[currency]
 
-  const iconName = coin.icon;
+  if (!coin) {
+    return <div>Unknown Coin</div>
+  }
+
+  const iconName = coin.icon
 
   return (
-      <img
-          src={`/images/icons/${iconName}.svg`}
-          alt={`${coin.name} icon`}
-          width="32"
-          height="32"
-      />
-  );
-};
+    <img
+        src={`/images/icons/${iconName}.svg`}
+        alt={`${coin.name}`}
+        width="32"
+        height="32"
+    />
+  )
+}
 
 export default function Coin({ chainId, currency, value }) {
   const {
