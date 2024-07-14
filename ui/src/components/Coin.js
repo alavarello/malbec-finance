@@ -5,6 +5,22 @@ import useCoinPrice from '../hooks/useCoinPrice'
 import { COINS } from '../constants/coins'
 import '../styles/coin.css'
 
+const CoinIcon = ({ currency }) => {
+  const coin = COINS[currency];
+  if (!coin) return <div>Unknown Coin</div>;
+
+  const iconName = coin.icon;
+
+  return (
+      <img
+          src={`/images/icons/${iconName}.svg`}
+          alt={`${coin.name} icon`}
+          width="32"
+          height="32"
+      />
+  );
+};
+
 export default function Coin({ chainId, currency, value }) {
   const {
     price,
@@ -20,7 +36,7 @@ export default function Coin({ chainId, currency, value }) {
 
   return (
     <div className="coin">
-      <div className="icon"></div>
+      <CoinIcon currency={currency} />
       <div className="value">
         {(price || priceLoading || priceError) && (
           <div className="price">

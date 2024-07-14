@@ -13,6 +13,7 @@ import { DEFAULT_CHAIN_ID } from './constants/chains'
 import { EXCHANGES } from './constants/exchanges'
 import './lib/web3modal'
 import './styles/index.css'
+import WineBackground from "./components/WineBackground";
 
 const root = ReactDOM.createRoot(
   document.getElementById('root'),
@@ -21,6 +22,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <WalletProvider defaultChainId={DEFAULT_CHAIN_ID}>
     <ExchangeProvider defaultExchange={EXCHANGES.UNISWAP}>
+      <WineBackground />
       <header>
         <h1>Malbec Finance</h1>
         <div className="user">
