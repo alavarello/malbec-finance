@@ -17,4 +17,12 @@ const sepolia = {
   rpcUrl: 'https://rpc.sepolia.org',
 }
 
-export const CHAINS = [mainnet, sepolia]
+const localhost = {
+  chainId: 311337,
+  name: 'Localhost',
+  currency: 'ETH',
+  explorerUrl: '',
+  rpcUrl: 'http://127.0.0.1:8545',
+}
+
+export const CHAINS = [mainnet, sepolia, localhost]

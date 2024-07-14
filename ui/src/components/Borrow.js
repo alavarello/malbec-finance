@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { parseUnits } from 'ethers'
 import Card from './Card'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
@@ -9,7 +10,7 @@ import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens, fromDecimals } from '../utils/liquidity'
 import { COINS } from '../constants/coins'
-import {EthersLender} from "../lib/lender";
+import { EthersLender } from '../lib/lender'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
@@ -34,7 +35,6 @@ export default function Borrow({ onClose }) {
       );
 
       setAvailableLiquidity(fromDecimals(liquidity, COINS[borrowToken.symbol].decimals));
-      setProcessedTicks(processTicksForChart(pool, borrowToken.symbol));
     }
   }, [pool, selectedCondition, targetPrice]);
 
@@ -42,19 +42,20 @@ export default function Borrow({ onClose }) {
     return fromToken && toToken && fromToken.symbol !== toToken.symbol
   }
 
-  const isBorrowValid = true // isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
+  const isBorrowValid = isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
 
   const handleTargetPriceChange = (event) => {
     setTargetPrice(event.target.value)
   }
 
   const borrowSubmit = () => {
+    const decimals = collateralToken.decimals
     EthersLender[31337].borrow(
-        collateralToken.address,
-        10,
-        borrowToken.address,
-        100,
-        4000
+      collateralToken.address[31337],
+      String(parseUnits(targetPrice, decimals)),
+      borrowToken.address[31337],
+      String(parseUnits(targetPrice, decimals)),
+      4000
     )
   }
 
