@@ -1,18 +1,13 @@
 import { LENDING_CONDITIONS } from '../constants/lending'
 
-export function calculateAvailableTokens(pool, targetPrice, positionType, token) {
-  let availableTokens = 0;
-
-  pool.ticks.forEach(tick => {
-    const price = parseFloat(token === pool.currency0 ? tick.price0 : tick.price1);
-
+export function calculateAvailableTokens(pool, targetPrice, lendingCondition) {
+  return pool.ticks.reduce((availableTokens, tick) => {
     if (
-      positionType === LENDING_CONDITIONS.Short && targetPrice <= price
-      || positionType === LENDING_CONDITIONS.Long && targetPrice >= price
+      lendingCondition === LENDING_CONDITIONS.Short && targetPrice <= price ||
+      lendingCondition === LENDING_CONDITIONS.Long && targetPrice >= price
     ) {
-      availableTokens += parseFloat(tick.liquidityNet);
+      return availableTokens + parseFloat(tick.liquidityNet)
     }
-  });
-
-  return availableTokens;
+    return availableTokens
+  })
 }
