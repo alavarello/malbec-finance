@@ -405,6 +405,28 @@ h1 {
   color: #555;
 }
 
+.input-number {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.input-number-max {
+  font-size: smaller;
+  text-align: right;
+}
+
+.input-number-max button {
+  cursor: pointer;
+  color: blue;
+  border-width: 0;
+  background-color: transparent;
+}
+
+.input-number-max button:hover {
+  text-decoration: underline;
+}
+
 .number-input {
   padding: 10px;
   border: 1px solid #ccc;

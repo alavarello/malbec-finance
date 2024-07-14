@@ -6,6 +6,7 @@ import ErrorButton from './ErrorButton'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
 import ExchangeToggle from './ExchangeToggle'
+import InputNumber from './InputNumber'
 import { LENDING_CONDITIONS } from '../constants/lending'
 import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
@@ -96,21 +97,15 @@ export default function Borrow({ onClose }) {
             {poolLoading && !poolError && <Spinner />}
             {poolError && !poolLoading && <ErrorButton message={poolError} />}
             <div className="input-group-token">
-              <input
-                type="number"
+              <InputNumber
                 value={borrowAmount}
-                onChange={(event) => setBorrowAmount(event.target.value)}
-                placeholder="Enter amount"
-                className="number-input"
-                max={!collateralAmount && !pool ? undefined : parseFloat(collateralAmount) * getCoinPrice(pool, borrowToken?.symbol)}
+                onValue={(value) => setBorrowAmount(value)}
+                max={!collateralAmount || !pool ? undefined : parseFloat(collateralAmount) * getCoinPrice(pool, borrowToken?.symbol)}
               />
-              <input
-                type="number"
+              <InputNumber
                 value={collateralAmount}
-                onChange={(event) => setCollateralAmount(event.target.value)}
-                placeholder="Enter amount"
-                className="number-input"
-                max={!borrowAmount && !pool ? undefined : parseFloat(borrowAmount) * getCoinPrice(pool, collateralToken?.symbol)}
+                onValue={(value) => setCollateralAmount(value)}
+                max={!borrowAmount || !pool ? undefined : parseFloat(borrowAmount) * getCoinPrice(pool, collateralToken?.symbol)}
               />
             </div>
           </div>
