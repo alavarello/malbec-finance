@@ -9,7 +9,6 @@ import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
-import { COINS } from '../constants/coins'
 import { EthersLender } from '../lib/lender'
 
 export default function Borrow({ onClose }) {
