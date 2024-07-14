@@ -11,15 +11,15 @@ export default function usePositions({ chainId, address }) {
         },
         colateral: {
           currency: 'ETH',
-          value: '1000',
+          value: '3',
           liquidation: {
             price: '3500000000000000000000000',
             lendingCondition: LENDING_CONDITIONS.Long,
           },
         },
         debt: {
-          currency: 'DAI',
-          value: '10',
+          currency: 'USDC',
+          value: '10000',
           liquidation: {
             price: '100000000000000000000',
             lendingCondition: LENDING_CONDITIONS.Short,

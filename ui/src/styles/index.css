@@ -593,8 +593,9 @@ body {
 
 .position-tokens {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
   flex: 1;
+  margin-right: 2rem;
 }
 
 .position-token {
