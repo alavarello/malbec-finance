@@ -8,7 +8,7 @@ import SuccessMessage from './SuccessMessage'
 
 export default function Repay({ onClose, debt }) {
   const { isConnected, chainId } = useWallet()
-  const [success, setSuccess] = useState(true)
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
