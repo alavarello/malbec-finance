@@ -21,7 +21,7 @@ const sepolia = {
 
 const localhost = {
   uniswapKey: 'LOCALHOST',
-  chainId: 311337,
+  chainId: 31337,
   name: 'Localhost',
   currency: 'ETH',
   explorerUrl: '',
