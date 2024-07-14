@@ -174,12 +174,12 @@ contract CounterTest is Test, Deployers {
             ZERO_BYTES
         );
 
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 1.5 ether);
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 0.5 ether);
-//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 1.5 ether);
-//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 0.5 ether);
+        assertApproxEqRel(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 2.5 ether, 3);
+        assertApproxEqRel(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 0.5 ether, 3);
+        assertApproxEqRel(IERC20(Currency.unwrap(currency1)).balanceOf(address(manager)), 2.5 ether, 3);
+        assertApproxEqRel(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 0.5 ether, 3);
 
-//        assertEq(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 1 ether);
-//        assertEq(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 1 ether);
+        assertApproxEqRel(IERC20(Currency.unwrap(synthCurrency0)).balanceOf(address(manager)), 1 ether, 3);
+        assertApproxEqRel(IERC20(Currency.unwrap(synthCurrency1)).balanceOf(address(manager)), 1 ether, 3);
     }
 }
