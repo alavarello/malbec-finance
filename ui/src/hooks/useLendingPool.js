@@ -52,6 +52,13 @@ async function fetchData(chainId, currency0, currency1) {
   if (foundPool) {
     const ticks = await fetchTicks(foundPool.address, getUniswapChainKey(chainId))
     const currentTick = ticks.find((tick) => tick.tick === 0)
+
+    if (!currentTick) {
+      throw new Error(
+        `Pool between ${currency0} and ${currency1} for ${chainId} tick not found`
+      )
+    }
+
     const price0 = parseUnits(currentTick.price0, COINS[currency0]?.decimals ?? 18)
     const price1 = parseUnits(currentTick.price1, COINS[currency1]?.decimals ?? 18)
 
