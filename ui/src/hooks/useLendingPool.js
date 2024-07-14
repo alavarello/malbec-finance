@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LENDING_POOLS } from '../constants/lendingPools'
+import { getUniswapChainKey } from '../utils/chains'
 
 async function fetchTicks(poolAddress, chain = 'ETHEREUM', skip = 0, first = 1000) {
   const query = {
@@ -27,10 +28,15 @@ async function fetchTicks(poolAddress, chain = 'ETHEREUM', skip = 0, first = 100
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(query),
-  });
+  })
 
-  const data = await response.json();
-  return data.data.v3Pool.ticks;
+  const data = await response.json()
+
+  if (!data) {
+    throw new Error('Could not find Pool ticks')
+  }
+
+  return data.data.v3Pool.ticks
 }
 
 async function fetchData(chainId, currency0, currency1) {
@@ -42,7 +48,7 @@ async function fetchData(chainId, currency0, currency1) {
   )
 
   if (foundPool) {
-    const ticks = await fetchTicks(foundPool.address)
+    const ticks = await fetchTicks(foundPool.address, getUniswapChainKey(chainId))
     const currentTick = ticks.find((tick) => tick.tick === 0)
     const price0 = parseFloat(currentTick.price0)
     const price1 = parseFloat(currentTick.price1)
@@ -61,6 +67,9 @@ export default function useLendingPool({ chainId, currency0, currency1 }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!currency0 || !currency1) {
+      return
+    }
     setLoading(true)
     fetchData(chainId, currency0, currency1).then((pool) => {
       setPool(pool)

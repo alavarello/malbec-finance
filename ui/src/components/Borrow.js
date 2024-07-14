@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { formatUnits, parseUnits } from 'ethers'
 import Card from './Card'
+import Spinner from './Spinner'
+import ErrorButton from './ErrorButton'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
 import ExchangeToggle from './ExchangeToggle'
@@ -10,10 +12,11 @@ import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
 import { EthersLender } from '../lib/lender'
+import { getCoinPrice } from '../utils/pool'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
-  const { isConnected } = useWallet()
+  const { isConnected, chainId } = useWallet()
 
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
@@ -24,7 +27,12 @@ export default function Borrow({ onClose }) {
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0)
 
-  const { pool } = useLendingPool({
+  const {
+    pool,
+    loading: poolLoading,
+    error: poolError,
+  } = useLendingPool({
+    chainId,
     currency0: borrowToken?.symbol,
     currency1: collateralToken?.symbol,
   })
@@ -85,20 +93,24 @@ export default function Borrow({ onClose }) {
               selectedToToken={collateralToken}
               onSelectedToToken={setCollateralToken}
             />
+            {poolLoading && !poolError && <Spinner />}
+            {poolError && !poolLoading && <ErrorButton message={poolError} />}
             <div className="input-group-token">
               <input
                 type="number"
                 value={borrowAmount}
-                onChange={(event => setBorrowAmount(event.target.value))}
+                onChange={(event) => setBorrowAmount(event.target.value)}
                 placeholder="Enter amount"
                 className="number-input"
+                max={!collateralAmount && !pool ? undefined : parseFloat(collateralAmount) * getCoinPrice(pool, borrowToken?.symbol)}
               />
               <input
                 type="number"
                 value={collateralAmount}
-                onChange={(event => setCollateralAmount(event.target.value))}
+                onChange={(event) => setCollateralAmount(event.target.value)}
                 placeholder="Enter amount"
                 className="number-input"
+                max={!borrowAmount && !pool ? undefined : parseFloat(borrowAmount) * getCoinPrice(pool, collateralToken?.symbol)}
               />
             </div>
           </div>

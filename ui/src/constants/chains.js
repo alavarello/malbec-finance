@@ -2,6 +2,7 @@ export const DEFAULT_CHAIN_ID = 1
 export const DEFAULT_RPC_URL = 'https://cloudflare-eth.com'
 
 const mainnet = {
+  uniswapKey: 'ETHEREUM',
   chainId: 1,
   name: 'Ethereum',
   currency: 'ETH',
@@ -10,6 +11,7 @@ const mainnet = {
 }
 
 const sepolia = {
+  uniswapKey: 'SEPOLIA',
   chainId: 11155111,
   name: 'Ethereum Sepolia',
   currency: 'ETH',
@@ -18,6 +20,7 @@ const sepolia = {
 }
 
 const localhost = {
+  uniswapKey: 'LOCALHOST',
   chainId: 311337,
   name: 'Localhost',
   currency: 'ETH',
