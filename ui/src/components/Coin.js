@@ -26,6 +26,7 @@ export default function Coin({ chainId, currency, value }) {
     price,
     loading: priceLoading,
     error: priceError,
+    decimals: priceDecimals,
   } = useCoinPrice({
     chainId,
     currency,
@@ -42,7 +43,7 @@ export default function Coin({ chainId, currency, value }) {
           <div className="price">
             {price && !priceLoading && !priceError && (
               <div className="price">
-                ${formatUnits(String(price * amount), decimals)}
+                ${formatUnits(String(price * amount), decimals + priceDecimals)}
               </div>
             )}
             {priceLoading && !priceError && <Spinner size={12} />}

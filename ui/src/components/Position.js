@@ -5,7 +5,7 @@ import Liquidation from './Liquidation'
 export default function Position({
   borrower,
   pool,
-  colateral,
+  collateral,
   debt,
   interest,
 }) {
@@ -15,17 +15,17 @@ export default function Position({
         <div className="position-tokens">
           <div className="position-token">
             <div className="position-token-info">
-              <div className="title">Colateral</div>
+              <div className="title">Collateral</div>
               <Coin
-                chainId={colateral.chainId}
-                currency={colateral.currency}
-                value={colateral.value}
+                chainId={collateral.chainId}
+                currency={collateral.currency}
+                value={collateral.value}
               />
             </div>
             <Liquidation
-              price={colateral.liquidation.price}
-              currency={colateral.currency}
-              lendingCondition={colateral.liquidation.lendingCondition}
+              price={collateral.liquidation.price}
+              currency={collateral.currency}
+              lendingCondition={collateral.liquidation.lendingCondition}
             />
           </div>
           <div className="position-token">

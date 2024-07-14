@@ -2,6 +2,7 @@ import Position from './Position'
 import { useWallet } from '../stores/wallet'
 import usePositions from '../hooks/usePositions'
 import ErrorButton from './ErrorButton'
+import Spinner from './Spinner'
 
 export default function PositionList() {
   const { chainId, address, isConnected } = useWallet()
@@ -26,7 +27,7 @@ export default function PositionList() {
                 key={`${position.pool.poolId}-${position.debt.currency}`}
                 borrower={address}
                 pool={position.pool}
-                colateral={{
+                collateral={{
                   chainId,
                   currency: position.colateral.currency,
                   value: position.colateral.value,

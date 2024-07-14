@@ -33,5 +33,6 @@ export default function useCoinPrice({ chainId, currency }) {
     price,
     loading,
     error,
+    decimals: 8,
   }
 }
