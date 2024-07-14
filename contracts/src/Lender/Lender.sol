@@ -33,7 +33,7 @@ contract Lender {
     }
 
     //  (ETH/USD -> 3200)
-    function getPrice(address token0, address token1) internal returns(uint256) {
+    function getPrice(address token0, address token1) public view returns(uint256) {
         return 1;
     }
 
@@ -117,10 +117,8 @@ contract Lender {
         // TODO: This assumes that the collateral is always the first token of the pair in the price
         // TODO: Add delta for price liquidation
         if(price * positionToLiquidate.amountOfCollateral > positionToLiquidate.amountOfDebt) {
-            console2.log("true");
             return true;
         }
-        console2.log("false");
         return false;
     }
 

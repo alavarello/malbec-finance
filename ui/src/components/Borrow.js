@@ -1,19 +1,23 @@
 import { useEffect, useState } from 'react'
 import { formatUnits, parseUnits } from 'ethers'
 import Card from './Card'
+import Spinner from './Spinner'
+import ErrorButton from './ErrorButton'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
 import ExchangeToggle from './ExchangeToggle'
+import InputNumber from './InputNumber'
 import { LENDING_CONDITIONS } from '../constants/lending'
 import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
 import { EthersLender } from '../lib/lender'
+import { calculateMax, getCoinPrice } from '../utils/pool'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
-  const { isConnected } = useWallet()
+  const { isConnected, chainId } = useWallet()
 
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
@@ -24,7 +28,12 @@ export default function Borrow({ onClose }) {
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0)
 
-  const { pool } = useLendingPool({
+  const {
+    pool,
+    loading: poolLoading,
+    error: poolError,
+  } = useLendingPool({
+    chainId,
     currency0: borrowToken?.symbol,
     currency1: collateralToken?.symbol,
   })
@@ -85,20 +94,18 @@ export default function Borrow({ onClose }) {
               selectedToToken={collateralToken}
               onSelectedToToken={setCollateralToken}
             />
+            {poolLoading && !poolError && <Spinner />}
+            {poolError && !poolLoading && <ErrorButton message={poolError} />}
             <div className="input-group-token">
-              <input
-                type="number"
+              <InputNumber
                 value={borrowAmount}
-                onChange={(event => setBorrowAmount(event.target.value))}
-                placeholder="Enter amount"
-                className="number-input"
+                onValue={(value) => setBorrowAmount(value)}
+                max={calculateMax(pool, collateralAmount, borrowToken?.symbol)}
               />
-              <input
-                type="number"
+              <InputNumber
                 value={collateralAmount}
-                onChange={(event => setCollateralAmount(event.target.value))}
-                placeholder="Enter amount"
-                className="number-input"
+                onValue={(value) => setCollateralAmount(value)}
+                max={calculateMax(pool, borrowAmount, collateralToken?.symbol)}
               />
             </div>
           </div>

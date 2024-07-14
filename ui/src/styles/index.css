@@ -405,6 +405,28 @@ h1 {
   color: #555;
 }
 
+.input-number {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.input-number-max {
+  font-size: smaller;
+  text-align: right;
+}
+
+.input-number-max button {
+  cursor: pointer;
+  color: blue;
+  border-width: 0;
+  background-color: transparent;
+}
+
+.input-number-max button:hover {
+  text-decoration: underline;
+}
+
 .number-input {
   padding: 10px;
   border: 1px solid #ccc;
@@ -494,8 +516,7 @@ h1 {
 /* PositionList styles */
 .position-list {
   font-family: 'Inter', sans-serif;
-  max-width: 800px;
-  margin: 2rem auto;
+  margin: 2rem;
   padding: 1.5rem;
   background-color: #f9fafb;
   border-radius: 12px;
