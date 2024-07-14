@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { parseUnits } from 'ethers'
+import { formatUnits, parseUnits } from 'ethers'
 import Card from './Card'
 import DropDown from './DropDown'
 import TokenPairDropDown from './TokenPairDropDown'
@@ -8,7 +8,7 @@ import { LENDING_CONDITIONS } from '../constants/lending'
 import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
-import { calculateAvailableTokens, fromDecimals } from '../utils/liquidity'
+import { calculateAvailableTokens } from '../utils/liquidity'
 import { COINS } from '../constants/coins'
 import { EthersLender } from '../lib/lender'
 
@@ -23,18 +23,23 @@ export default function Borrow({ onClose }) {
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0);
 
-  const pool = useLendingPool({ currency0: borrowToken?.symbol, currency1: collateralToken?.symbol });
+  const pool = useLendingPool({
+    currency0: borrowToken?.symbol,
+    currency1: collateralToken?.symbol,
+  });
 
   useEffect(() => {
     if (pool && selectedCondition && targetPrice) {
       const liquidity = calculateAvailableTokens(
         pool,
-        parseFloat(targetPrice),
+        parseUnits(targetPrice, 2),
         selectedCondition.key,
         borrowToken.symbol,
       );
 
-      setAvailableLiquidity(fromDecimals(liquidity, COINS[borrowToken.symbol].decimals));
+      setAvailableLiquidity(
+        formatUnits(liquidity, 2)
+      )
     }
   }, [pool, selectedCondition, targetPrice]);
 
@@ -49,13 +54,12 @@ export default function Borrow({ onClose }) {
   }
 
   const borrowSubmit = () => {
-    const decimals = collateralToken.decimals
     EthersLender[31337].borrow(
       collateralToken.address[31337],
-      String(parseUnits(targetPrice, decimals)),
+      '1',
       borrowToken.address[31337],
-      String(parseUnits(targetPrice, decimals)),
-      4000
+      '1',
+      String(parseUnits(targetPrice, 2))
     )
   }
 

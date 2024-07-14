@@ -16,12 +16,3 @@ export function calculateAvailableTokens(pool, targetPrice, positionType, token)
 
   return availableTokens;
 }
-
-export function fromDecimals(value, decimals) {
-  return value / Math.pow(10, decimals);
-}
-
-export function toDecimals(value, decimals) {
-  return value * Math.pow(10, decimals);
-}
-
