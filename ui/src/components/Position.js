@@ -48,13 +48,6 @@ export default function Position({
       </div>
       <div className="position-footer">
         <Interest rate={interest.rate} fee={interest.fee} />
-        {/* <div className="position-liquidation">
-          <Liquidation
-            price={liquidation.price}
-            currency={colateral.currency}
-            lendingCondition={liquidation.lendingCondition}
-          />
-        </div> */}
       </div>
     </div>
   )

@@ -719,13 +719,13 @@ body {
 }
 
 .spinner {
+  display: inline-block;
   border: 4px solid rgba(76, 81, 191, 0.1);
   border-left: 4px solid #4c51bf;
   border-radius: 50%;
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
-  margin: 2rem auto;
 }
 
 @keyframes spin {
