@@ -369,13 +369,13 @@ h1 {
   top: 0;
 }
 
-.actions button:hover {
+.actions button:hover:not(:disabled) {
   background-color: rgba(114, 47, 55, 0.82);
   color: white;
   box-shadow: 0 6px 8px rgba(114, 47, 55, 0.3);
 }
 
-.actions button:active {
+.actions button:active:not(:disabled) {
   top: 2px;
   box-shadow: 0 2px 4px rgba(114, 47, 55, 0.2);
   background-color: rgba(114, 47, 55, 0.9);
