@@ -35,7 +35,6 @@ contract LendingHook is BaseHook {
     using CurrencySettler for Currency;
     using StateLibrary for IPoolManager;
     using PoolGetters for IPoolManager;
-    using TickBitmap for mapping(int16 => uint256);
 
     PoolKey public syntheticPoolKey;
     SyntheticHook public synthHook;

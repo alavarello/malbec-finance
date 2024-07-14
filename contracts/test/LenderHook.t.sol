@@ -14,6 +14,7 @@ import {PoolSwapTest} from "v4-core/src/test/PoolSwapTest.sol";
 import {Deployers} from "v4-core/test/utils/Deployers.sol";
 import {LendingHook} from "../src/LendingHook.sol";
 import {SyntheticHook} from "../src/SyntheticHook.sol";
+import {Lender} from "../src/Lender/Lender.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
@@ -25,6 +26,7 @@ contract CounterTest is Test, Deployers {
 
     LendingHook hook;
     SyntheticHook synthHook;
+    Lender lender;
 
     PoolKey controlKey;
 
@@ -83,6 +85,19 @@ contract CounterTest is Test, Deployers {
             key,
             IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 1 ether, 0),
             ZERO_BYTES
+        );
+    }
+
+    function testLending() public {
+        Lender lender = new Lender(key, address(manager));
+        console2.log(address(lender));
+        lender.setHookAddress(address(hook));
+        lender.borrow(
+            Currency.unwrap(currency0),
+            10,
+            Currency.unwrap(currency1),
+            100,
+            4000
         );
     }
 
