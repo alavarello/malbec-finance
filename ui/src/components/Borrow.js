@@ -13,7 +13,7 @@ import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
 import { EthersLender } from '../lib/lender'
-import { getCoinPrice } from '../utils/pool'
+import { calculateMax, getCoinPrice } from '../utils/pool'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
@@ -100,12 +100,12 @@ export default function Borrow({ onClose }) {
               <InputNumber
                 value={borrowAmount}
                 onValue={(value) => setBorrowAmount(value)}
-                max={!collateralAmount || !pool ? undefined : parseFloat(collateralAmount) * getCoinPrice(pool, borrowToken?.symbol)}
+                max={calculateMax(pool, collateralAmount, borrowToken?.symbol)}
               />
               <InputNumber
                 value={collateralAmount}
                 onValue={(value) => setCollateralAmount(value)}
-                max={!borrowAmount || !pool ? undefined : parseFloat(borrowAmount) * getCoinPrice(pool, collateralToken?.symbol)}
+                max={calculateMax(pool, borrowAmount, collateralToken?.symbol)}
               />
             </div>
           </div>

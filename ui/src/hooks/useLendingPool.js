@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { parseUnits } from 'ethers'
+import { COINS } from '../constants/coins'
 import { LENDING_POOLS } from '../constants/lendingPools'
 import { getUniswapChainKey } from '../utils/chains'
 
@@ -50,8 +52,8 @@ async function fetchData(chainId, currency0, currency1) {
   if (foundPool) {
     const ticks = await fetchTicks(foundPool.address, getUniswapChainKey(chainId))
     const currentTick = ticks.find((tick) => tick.tick === 0)
-    const price0 = parseFloat(currentTick.price0)
-    const price1 = parseFloat(currentTick.price1)
+    const price0 = parseUnits(currentTick.price0, COINS[currency0]?.decimals ?? 18)
+    const price1 = parseUnits(currentTick.price1, COINS[currency1]?.decimals ?? 18)
 
     return { ...foundPool, ticks, price0, price1 }
   }
