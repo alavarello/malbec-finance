@@ -1,26 +1,11 @@
-# v4-template
-### **A template for writing Uniswap v4 Hooks 🦄**
+# Uniswap v4-template Malbec.fi Fork
+- [`Uniswap v4 Template`](https://github.com/uniswapfoundation/v4-template/generate)
 
-[`Use this Template`](https://github.com/uniswapfoundation/v4-template/generate)
+We added the lendingHook.sol contract that interacts with our pools to be able to virtualize the swap curve so we are able to lend liquidity that is not being used in the current price range.
 
-1. The example hook [Counter.sol](src/Counter.sol) demonstrates the `beforeSwap()` and `afterSwap()` hooks
-2. The test template [Counter.t.sol](test/Counter.t.sol) preconfigures the v4 pool manager, test tokens, and test liquidity.
+This is done by a combination of Uniswap v4 hooks and a synthetic pool we use for reference and book-keeping of the values of the pool.
 
-<details>
-<summary>Updating to v4-template:latest</summary>
-
-This template is actively maintained -- you can update the v4 dependencies, scripts, and helpers: 
-```bash
-git remote add template https://github.com/uniswapfoundation/v4-template
-git fetch template
-git merge template/main <BRANCH> --allow-unrelated-histories
-```
-
-</details>
-
----
-
-## Set up
+# Set up taken from the Uniswap v4-template
 
 *requires [foundry](https://book.getfoundry.sh)*
 
@@ -124,4 +109,3 @@ Additional resources:
 [v4-core](https://github.com/uniswap/v4-core)
 
 [v4-by-example](https://v4-by-example.org)
-
