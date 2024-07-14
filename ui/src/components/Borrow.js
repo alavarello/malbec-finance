@@ -22,12 +22,12 @@ export default function Borrow({ onClose }) {
   const [borrowAmount, setBorrowAmount] = useState('')
   const [collateralAmount, setCollateralAmount] = useState('')
   const [targetPrice, setTargetPrice] = useState('')
-  const [availableLiquidity, setAvailableLiquidity] = useState(0);
+  const [availableLiquidity, setAvailableLiquidity] = useState(0)
 
-  const pool = useLendingPool({
+  const { pool } = useLendingPool({
     currency0: borrowToken?.symbol,
     currency1: collateralToken?.symbol,
-  });
+  })
 
   useEffect(() => {
     if (pool && selectedCondition && targetPrice) {
@@ -41,7 +41,7 @@ export default function Borrow({ onClose }) {
         formatUnits(liquidity, 2)
       )
     }
-  }, [pool, selectedCondition, targetPrice]);
+  }, [pool, selectedCondition, targetPrice])
 
   const validateTokens = (fromToken, toToken) => {
     return fromToken && toToken && fromToken.symbol !== toToken.symbol
