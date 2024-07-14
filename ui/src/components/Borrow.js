@@ -13,8 +13,8 @@ import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
 import { LENDERS } from '../lib/lender'
-import { calculateMax, getCoinPrice } from '../utils/pool'
-import {COINS} from "../constants/coins";
+import { calculateMax } from '../utils/pool'
+import { COINS } from '../constants/coins'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
