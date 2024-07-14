@@ -42,7 +42,7 @@ export default function Coin({ chainId, currency, value }) {
           <div className="price">
             {price && !priceLoading && !priceError && (
               <div className="price">
-                ${formatUnits(amount * price, decimals)}
+                ${formatUnits(String(price / 100000000n * amount), decimals)}
               </div>
             )}
             {priceLoading && !priceError && <Spinner size={12} />}

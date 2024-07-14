@@ -17,7 +17,7 @@ export default function useCoinPrice({ chainId, currency }) {
       ))
     } else {
       setLoading(true)
-      PYTH[chainId].getPrice(PRICE_FEED_IDS[currency]).then(([price]) => {
+      PYTH[chainId].getPriceUnsafe(PRICE_FEED_IDS[currency]).then(([price]) => {
         setPrice(price)
       }).catch((err) => {
         setError(new Error(
