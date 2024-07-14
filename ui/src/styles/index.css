@@ -326,14 +326,28 @@ h1 {
   color: #333;
 }
 
+.token-pair-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 .token-pair-selector-container {
   display: flex;
   justify-content: space-between;
   gap: 20px;
   padding: 15px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.input-group-token {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px;
 }
 
 .actions {
@@ -391,7 +405,7 @@ h1 {
   color: #555;
 }
 
-.target-price-input {
+.number-input {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;

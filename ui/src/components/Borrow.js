@@ -19,6 +19,8 @@ export default function Borrow({ onClose }) {
   const [collateralToken, setCollateralToken] = useState(null)
   const [selectedCondition, setSelectedCondition] = useState(null)
   const [selectedExchange, setSelectedExchange] = useState(exchange)
+  const [borrowAmount, setBorrowAmount] = useState('')
+  const [collateralAmount, setCollateralAmount] = useState('')
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0);
 
@@ -50,19 +52,17 @@ export default function Borrow({ onClose }) {
     isConnected &&
     selectedCondition &&
     targetPrice &&
+    collateralAmount &&
+    borrowAmount &&
     validateTokens(borrowToken, collateralToken)
   )
-
-  const handleTargetPriceChange = (event) => {
-    setTargetPrice(event.target.value)
-  }
 
   const borrowSubmit = () => {
     EthersLender[31337].borrow(
       collateralToken.address[31337],
-      '1',
+      collateralAmount,
       borrowToken.address[31337],
-      '1',
+      borrowAmount,
       String(parseUnits(targetPrice, 2))
     )
   }
@@ -79,12 +79,30 @@ export default function Borrow({ onClose }) {
             <div>Borrow</div>
             <div>Collateral</div>
           </div>
-          <TokenPairDropDown
-            selectedFromToken={borrowToken}
-            onSelectedFromToken={setBorrowToken}
-            selectedToToken={collateralToken}
-            onSelectedToToken={setCollateralToken}
-          />
+          <div className="token-pair-container">
+            <TokenPairDropDown
+              selectedFromToken={borrowToken}
+              onSelectedFromToken={setBorrowToken}
+              selectedToToken={collateralToken}
+              onSelectedToToken={setCollateralToken}
+            />
+            <div className="input-group-token">
+              <input
+                type="number"
+                value={borrowAmount}
+                onChange={(event => setBorrowAmount(event.target.value))}
+                placeholder="Enter amount"
+                className="number-input"
+              />
+              <input
+                type="number"
+                value={collateralAmount}
+                onChange={(event => setCollateralAmount(event.target.value))}
+                placeholder="Enter amount"
+                className="number-input"
+              />
+            </div>
+          </div>
           <div className="input-group">
             <label>By:</label>
             <DropDown
@@ -101,9 +119,9 @@ export default function Borrow({ onClose }) {
             <input
               type="number"
               value={targetPrice}
-              onChange={handleTargetPriceChange}
+              onChange={(event => setTargetPrice(event.target.value))}
               placeholder="Enter target price"
-              className="target-price-input"
+              className="number-input"
             />
             {borrowToken && collateralToken && (
               <div className="selected-tokens">
