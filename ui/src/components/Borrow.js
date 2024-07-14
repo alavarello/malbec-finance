@@ -13,7 +13,8 @@ import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
 import { LENDERS } from '../lib/lender'
-import { calculateMax, getCoinPrice } from '../utils/pool'
+import { calculateMax } from '../utils/pool'
+import { COINS } from '../constants/coins'
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
@@ -73,9 +74,9 @@ export default function Borrow({ onClose }) {
   const borrowSubmit = () => {
     setLoading(true)
     LENDERS[chainId].borrow(
-      collateralToken.address[chainId],
+      COINS[collateralToken.symbol].address[chainId],
       collateralAmount,
-      borrowToken.address[chainId],
+      COINS[borrowToken.symbol].address[chainId],
       borrowAmount,
       String(parseUnits(targetPrice, 2))
     ).then(() => {

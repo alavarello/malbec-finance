@@ -4,7 +4,7 @@ export const COINS = {
     decimals: 18,
     icon: "eth",
     address: {
-      311337: "",
+      31337: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
     },
   },
   DAI: {
@@ -12,7 +12,7 @@ export const COINS = {
     decimals: 18,
     icon: "dai",
     address: {
-      311337: "",
+      31337: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
     },
   },
   USDC: {
@@ -20,7 +20,7 @@ export const COINS = {
     decimals: 6,
     icon: "usdc",
     address: {
-      311337: "",
+      31337: "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
     }
   },
   WETH: {
@@ -28,7 +28,7 @@ export const COINS = {
     decimals: 18,
     icon: "weth",
     address: {
-      311337: "",
+      31337: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
     },
   },
   WBTC: {
@@ -36,7 +36,7 @@ export const COINS = {
     decimals: 18,
     icon: "bitcoin",
     address: {
-      311337: "",
+      31337: "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
     },
   },
 }
