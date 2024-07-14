@@ -40,7 +40,7 @@ export default function useLendingPool({ chainId, currency0, currency1 }) {
     async function fetchData() {
       const foundPool = lendingPools.find(pool =>
         (pool.currency0 === currency0 && pool.currency1 === currency1) ||
-        (pool.currency1 === currency0 && pool.currency0 === currency0)
+        (pool.currency1 === currency0 && pool.currency0 === currency1)
       );
 
       if (foundPool) {
