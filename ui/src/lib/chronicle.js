@@ -1,8 +1,8 @@
+import { ethers } from 'ethers'
+import { PROVIDERS } from './ethers'
+
 // Contract addresses must be from a coin to USD per chain
 // https://docs.chroniclelabs.org/hackathons/eth-global-brussels-hackathon
-import { PROVIDERS } from './ethers'
-import { ethers } from 'ethers'
-
 const CHRONICLE_ADDRESSES = {
   1: {
   },
