@@ -12,15 +12,14 @@ import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {IHooks} from "v4-core/src/interfaces/IHooks.sol";
+import {Hooks} from "v4-core/src/libraries/Hooks.sol";
 
-contract DeployScript is Script, Deployers, Test {
+contract DeployScript is Script, Deployers {
     LendingHook hook;
     SyntheticHook synthHook;
     Lender lender;
 
     PoolKey controlKey;
-
-    function setUp() public {}
 
     function deploySyntheticHook() public {
         address flags = address(
@@ -49,7 +48,6 @@ contract DeployScript is Script, Deployers, Test {
         );
         deployCodeTo("LendingHook.sol:LendingHook", abi.encode(manager), flags);
         hook = LendingHook(flags);
-        // Initialize a bytes array with length 20
         key = PoolKey(currency0, currency1, 0, 60, IHooks(hook));
         manager.initialize(key, SQRT_PRICE_1_1, abi.encodePacked(address(synthHook)));
     }
@@ -59,7 +57,7 @@ contract DeployScript is Script, Deployers, Test {
         manager.initialize(controlKey, SQRT_PRICE_1_1, ZERO_BYTES);
     }
 
-    function run() public {
+    function testDeploy() external {
         Deployers.deployFreshManagerAndRouters();
         Deployers.deployMintAndApprove2Currencies();
 
@@ -84,6 +82,9 @@ contract DeployScript is Script, Deployers, Test {
             ZERO_BYTES
         );
 
+        Lender lender = new Lender(key, address(manager));
+        console2.log(address(lender));
+        lender.setHookAddress(address(hook));
     }
 
 }
