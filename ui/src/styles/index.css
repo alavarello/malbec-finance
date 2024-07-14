@@ -156,7 +156,7 @@ h1 {
   cursor: pointer;
   padding: 10px 20px;
   border-radius: 5px;
-  background-color: #722f37;
+  background-color: #864c52;
   color: white;
   border: none;
   text-transform: uppercase;
@@ -165,7 +165,7 @@ h1 {
 }
 
 .actions button:hover:not(:disabled) {
-  background-color: #8f3b45;
+  background-color: #722f37;
 }
 
 .actions button:disabled {
@@ -541,10 +541,11 @@ body {
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background-color: #864c52;
 }
 
 .repay:hover {
-  background-color: #434190;
+  background-color: #721722;
   box-shadow: 0 4px 6px rgba(76, 81, 191, 0.3);
 }
 
