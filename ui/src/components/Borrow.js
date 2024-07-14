@@ -46,7 +46,8 @@ export default function Borrow({ onClose }) {
       const liquidity = calculateAvailableTokens(
         pool,
         parseUnits(targetPrice, 2),
-        selectedCondition.key
+        selectedCondition.key,
+        borrowToken.symbol,
       )
 
       setAvailableLiquidity(
