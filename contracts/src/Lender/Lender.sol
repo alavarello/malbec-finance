@@ -21,7 +21,7 @@ contract Lender {
         bool rightLiquidity;
     }
 
-    mapping(uint256 positionId => DebtPosition position) positions;
+    mapping(uint256 positionId => DebtPosition position) public positions;
     PoolKey key;
     address hookAddress;
     IPoolManager manager;
