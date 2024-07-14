@@ -74,7 +74,6 @@ contract Lender {
     }
 
     function liquidatePosition(uint256 positionId, DebtPosition memory positionToLiquidate) internal {
-        // TODO: Use the Pool
         IERC20(positionToLiquidate.debtToken).transferFrom(
             msg.sender,
             hookAddress,
