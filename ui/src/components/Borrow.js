@@ -12,7 +12,7 @@ import { useExchange } from '../stores/exchange'
 import { useWallet } from '../stores/wallet'
 import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens } from '../utils/liquidity'
-import { EthersLender } from '../lib/lender'
+import { LENDERS } from '../lib/lender'
 import { calculateMax, getCoinPrice } from '../utils/pool'
 
 export default function Borrow({ onClose }) {
@@ -27,6 +27,9 @@ export default function Borrow({ onClose }) {
   const [collateralAmount, setCollateralAmount] = useState('')
   const [targetPrice, setTargetPrice] = useState('')
   const [availableLiquidity, setAvailableLiquidity] = useState(0)
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const {
     pool,
@@ -62,90 +65,103 @@ export default function Borrow({ onClose }) {
     targetPrice &&
     collateralAmount &&
     borrowAmount &&
-    validateTokens(borrowToken, collateralToken)
+    validateTokens(borrowToken, collateralToken) &&
+    LENDERS[chainId]
   )
 
   const borrowSubmit = () => {
-    EthersLender[31337].borrow(
-      collateralToken.address[31337],
+    setLoading(true)
+    LENDERS[chainId].borrow(
+      collateralToken.address[chainId],
       collateralAmount,
-      borrowToken.address[31337],
+      borrowToken.address[chainId],
       borrowAmount,
       String(parseUnits(targetPrice, 2))
-    )
+    ).then(() => {
+      setSuccess(true)
+    }).catch((err) => {
+      setError(new Error(`Could not borrow: ${err}`))
+    }).finally(() => {
+      setLoading(false)
+    })
   }
 
   return (
     <div>
       <Card>
-        <div className="borrow-container">
-          <ExchangeToggle
-            selectedExchange={selectedExchange}
-            onSelectExchange={setSelectedExchange}
-          />
-          <div className="borrow-token-titles">
-            <div>Borrow</div>
-            <div>Collateral</div>
-          </div>
-          <div className="token-pair-container">
-            <TokenPairDropDown
-              selectedFromToken={borrowToken}
-              onSelectedFromToken={setBorrowToken}
-              selectedToToken={collateralToken}
-              onSelectedToToken={setCollateralToken}
+        {success && <SuccessMessage>Your borrow has been success!</SuccessMessage>}
+        {!success && (
+          <div className="borrow-container">
+            {loading && !error && <Spinner size={96} />}
+            <ExchangeToggle
+              selectedExchange={selectedExchange}
+              onSelectExchange={setSelectedExchange}
             />
-            {poolLoading && !poolError && <Spinner />}
-            {poolError && !poolLoading && <ErrorButton message={poolError} />}
-            <div className="input-group-token">
-              <InputNumber
-                value={borrowAmount}
-                onValue={(value) => setBorrowAmount(value)}
-                max={calculateMax(pool, collateralAmount, borrowToken?.symbol)}
-              />
-              <InputNumber
-                value={collateralAmount}
-                onValue={(value) => setCollateralAmount(value)}
-                max={calculateMax(pool, borrowAmount, collateralToken?.symbol)}
-              />
+            <div className="borrow-token-titles">
+              <div>Borrow</div>
+              <div>Collateral</div>
             </div>
-          </div>
-          <div className="input-group">
-            <label>By:</label>
-            <DropDown
-              items={Object.values(LENDING_CONDITIONS).map((lendingCondition) => ({
-                key: lendingCondition,
-                display: lendingCondition,
-              }))}
-              selectedItem={selectedCondition}
-              onSelectItem={setSelectedCondition}
-            />
-          </div>
-          <div className="input-group">
-            <label>Target Price:</label>
-            <input
-              type="number"
-              value={targetPrice}
-              onChange={(event => setTargetPrice(event.target.value))}
-              placeholder="Enter target price"
-              className="number-input"
-            />
-            {borrowToken && collateralToken && (
-              <div className="selected-tokens">
-                {collateralToken.symbol} / {borrowToken.symbol} ({collateralToken.symbol} in terms of {borrowToken.symbol})
+            <div className="token-pair-container">
+              <TokenPairDropDown
+                selectedFromToken={borrowToken}
+                onSelectedFromToken={setBorrowToken}
+                selectedToToken={collateralToken}
+                onSelectedToToken={setCollateralToken}
+              />
+              {poolLoading && !poolError && <Spinner />}
+              {poolError && !poolLoading && <ErrorButton message={poolError} />}
+              <div className="input-group-token">
+                <InputNumber
+                  value={borrowAmount}
+                  onValue={(value) => setBorrowAmount(value)}
+                  max={calculateMax(pool, collateralAmount, borrowToken?.symbol)}
+                />
+                <InputNumber
+                  value={collateralAmount}
+                  onValue={(value) => setCollateralAmount(value)}
+                  max={calculateMax(pool, borrowAmount, collateralToken?.symbol)}
+                />
               </div>
-            )}
-            <div className="available-liquidity">
-              <label>Available Liquidity:</label>
-              <div>{availableLiquidity}</div>
             </div>
+            <div className="input-group">
+              <label>By:</label>
+              <DropDown
+                items={Object.values(LENDING_CONDITIONS).map((lendingCondition) => ({
+                  key: lendingCondition,
+                  display: lendingCondition,
+                }))}
+                selectedItem={selectedCondition}
+                onSelectItem={setSelectedCondition}
+              />
+            </div>
+            <div className="input-group">
+              <label>Target Price:</label>
+              <input
+                type="number"
+                value={targetPrice}
+                onChange={(event => setTargetPrice(event.target.value))}
+                placeholder="Enter target price"
+                className="number-input"
+              />
+              {borrowToken && collateralToken && (
+                <div className="selected-tokens">
+                  {collateralToken.symbol} / {borrowToken.symbol} ({collateralToken.symbol} in terms of {borrowToken.symbol})
+                </div>
+              )}
+              <div className="available-liquidity">
+                <label>Available Liquidity:</label>
+                <div>{availableLiquidity}</div>
+              </div>
+            </div>
+            {error && !loading && <ErrorButton message={error} />}
+            <div className="actions">
+              <button disabled={!isBorrowValid} onClick={() => borrowSubmit()}>Borrow</button>
+            </div>
+            {!isConnected && (
+              <div className="error">Connect your wallet to Borrow</div>
+            )}
           </div>
-          <div className="actions">
-            <button disabled={!isBorrowValid} onClick={() => borrowSubmit()}>Borrow</button>
-          </div>
-          {!isConnected && (
-            <div className="error">Connect your wallet to Borrow</div>
-          )}
-        </div>
+        )}
       </Card>
     </div>
   )

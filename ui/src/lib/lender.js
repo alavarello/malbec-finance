@@ -7,7 +7,7 @@ export const CONTRACT_ADDRESSES = {
   31337: '0xDB25A7b768311dE128BBDa7B8426c3f9C74f3240',
 }
 
-export const EthersLender = Object.fromEntries(
+export const LENDERS = Object.fromEntries(
   Object.entries(CONTRACT_ADDRESSES)
     .filter(([chainId]) => PROVIDERS[chainId])
     .map(([chainId, contractAddress]) =>

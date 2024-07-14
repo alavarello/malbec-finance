@@ -1,3 +1,5 @@
+import ButtonModal from './ButtonModal'
+import Repay from './Repay'
 import Coin from './Coin'
 import Interest from './Interest'
 import Liquidation from './Liquidation'
@@ -44,7 +46,9 @@ export default function Position({
             />
           </div>
         </div>
-        <button className="repay">Repay</button>
+        <ButtonModal className="repay" modal={Repay} debt={debt}>
+          Repay
+        </ButtonModal>
       </div>
       <div className="position-footer">
         <Interest rate={interest.rate} fee={interest.fee} />

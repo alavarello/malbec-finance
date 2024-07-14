@@ -737,3 +737,7 @@ body {
   width: 100%;
   margin-top: 2rem;
 }
+
+.success-message {
+  color: #64bef5;
+}
