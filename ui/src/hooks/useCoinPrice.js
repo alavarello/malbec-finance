@@ -27,7 +27,7 @@ export default function useCoinPrice({ chainId, currency }) {
         setLoading(false)
       })
     }
-  }, [])
+  }, [chainId, currency])
 
   return {
     price,
