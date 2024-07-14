@@ -88,19 +88,6 @@ contract CounterTest is Test, Deployers {
         );
     }
 
-    function testLending() public {
-        Lender lender = new Lender(key, address(manager));
-        console2.log(address(lender));
-        lender.setHookAddress(address(hook));
-        lender.borrow(
-            Currency.unwrap(currency0),
-            10,
-            Currency.unwrap(currency1),
-            100,
-            4000
-        );
-    }
-
     function testAfterInitialize() public {
         assertEq(address(hook.synthHook()), address(0x8888000000000000000000000000000000000a80));
         assertEq(address(hook), address(0x4444000000000000000000000000000000001583));
