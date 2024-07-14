@@ -45,7 +45,7 @@ export default function useLendingPool({ chainId, currency0, currency1 }) {
 
       if (foundPool) {
         const ticks = await fetchTicks(foundPool.address);
-        const currentTick = pool.ticks.find(tick => tick.tick === 0);
+        const currentTick = ticks.find(tick => tick.tick === 0);
         const price0 = parseFloat(currentTick.price0);
         const price1 = parseFloat(currentTick.price1);
 
