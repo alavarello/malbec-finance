@@ -47,7 +47,12 @@ export default function Borrow({ onClose }) {
     return fromToken && toToken && fromToken.symbol !== toToken.symbol
   }
 
-  const isBorrowValid = isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
+  const isBorrowValid = (
+    isConnected &&
+    selectedCondition &&
+    targetPrice &&
+    validateTokens(borrowToken, collateralToken)
+  )
 
   const handleTargetPriceChange = (event) => {
     setTargetPrice(event.target.value)
