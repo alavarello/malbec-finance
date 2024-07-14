@@ -18,11 +18,13 @@ import {TickBitmap} from "v4-core/src/libraries/TickBitmap.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Pool} from "v4-core/src/libraries/Pool.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
-import {PoolGetters} from "lib/v4-periphery/contracts/libraries/PoolGetters.sol";
-import {LiquidityAmounts} from "lib/v4-periphery/contracts/libraries/LiquidityAmounts.sol";
+import {PoolGetters} from "v4-periphery/libraries/PoolGetters.sol";
+import {LiquidityAmounts} from "v4-periphery/libraries/LiquidityAmounts.sol";
 import {SyntheticHook} from "./SyntheticHook.sol";
 import {SyntheticToken} from "./SyntheticToken.sol";
 import {Lock} from "v4-core/src/libraries/Lock.sol";
+import {BitMath} from "v4-core/src/libraries/TickBitmap.sol";
+
 
 contract LendingHook is BaseHook {
     bytes constant ZERO_BYTES = new bytes(0);
@@ -95,8 +97,34 @@ contract LendingHook is BaseHook {
             addr := mload(add(b, 20))
         }
     }
+    
+    function getIntervalWithMultipleOfTickSpace(int24 a, int24 b, int24 tickSpacing) public pure returns (int24, int24) {
+        // Ensure a is the smaller number and b is the larger number
+        int24 minVal = a < b ? a : b;
+        int24 maxVal = a > b ? a : b;
 
-    function refillVirtualLiquidityBeforeSwap(
+        // Find the lower bound multiple of tickSpacing
+        int24 lowerBound;
+        if (minVal >= 0) {
+            lowerBound = (minVal / tickSpacing) * tickSpacing;
+        } else {
+            lowerBound = ((minVal + 1) / tickSpacing - 1) * tickSpacing;
+        }
+
+        // Find the upper bound multiple of tickSpacing
+        int24 upperBound;
+        if (maxVal % tickSpacing == 0) {
+            upperBound = maxVal;
+        } else if (maxVal >= 0) {
+            upperBound = ((maxVal / tickSpacing) + 1) * tickSpacing;
+        } else {
+            upperBound = ((maxVal - 1) / tickSpacing + 1) * tickSpacing;
+        }
+
+        return (lowerBound, upperBound);
+    }
+
+    function refillVirtualLiquidityBeforeSwapZeroForOne(
         PoolKey memory key,
         int24 syntheticTickBeforeSwap,
         int24 syntheticTickAfterSwap,
@@ -105,14 +133,23 @@ contract LendingHook is BaseHook {
         IPoolManager.ModifyLiquidityParams memory addLiquidityParams;
         // TODO: Check order of the swap
         // TODO: Test boundary cases
-        addLiquidityParams.tickUpper = syntheticTickBeforeSwap % 60 == 0 ? syntheticTickBeforeSwap : ((syntheticTickBeforeSwap / 60) - 1) * -60;
-        addLiquidityParams.tickLower = syntheticTickAfterSwap % 60 == 0 ? syntheticTickAfterSwap : ((syntheticTickAfterSwap / 60) - 1) * 60;
+
+        if(syntheticTickBeforeSwap == 0 && syntheticTickAfterSwap ==0) {
+            addLiquidityParams.tickLower = -key.tickSpacing;
+            addLiquidityParams.tickUpper = 0;
+        } else {
+            (int24 lowerBound, int24 upperBound) = getIntervalWithMultipleOfTickSpace(
+                syntheticTickBeforeSwap,
+                syntheticTickAfterSwap,
+                key.tickSpacing
+            );
+            addLiquidityParams.tickLower = lowerBound;
+            addLiquidityParams.tickUpper = upperBound;
+        }
+
         addLiquidityParams.liquidityDelta = liquidityDelta;
+
         Lock.unlock();
-        console2.log(addLiquidityParams.tickLower);
-        console2.log(addLiquidityParams.tickLower);
-        console2.log(syntheticTickBeforeSwap);
-        console2.log(syntheticTickAfterSwap / 2);
         (BalanceDelta result,) = manager.modifyLiquidity(
             key,
             addLiquidityParams,
@@ -123,57 +160,80 @@ contract LendingHook is BaseHook {
         key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
     }
 
+    function refillVirtualLiquidityBeforeSwapOneForZero(
+        PoolKey memory key,
+        int24 syntheticTickBeforeSwap,
+        int24 syntheticTickAfterSwap,
+        int256 liquidityDelta
+    ) public {
+        IPoolManager.ModifyLiquidityParams memory addLiquidityParams;
+        // TODO: Check order of the swap
+        // TODO: Test boundary cases
+
+       if(syntheticTickBeforeSwap == 0 && syntheticTickAfterSwap ==0) {
+            addLiquidityParams.tickLower = 0;
+            addLiquidityParams.tickUpper = key.tickSpacing;
+        } else {
+            (int24 lowerBound, int24 upperBound) = getIntervalWithMultipleOfTickSpace(
+                syntheticTickBeforeSwap,
+                syntheticTickAfterSwap,
+                key.tickSpacing
+            );
+            addLiquidityParams.tickLower = lowerBound;
+            addLiquidityParams.tickUpper = upperBound;
+        }
+
+        addLiquidityParams.liquidityDelta = liquidityDelta;
+
+        Lock.unlock();
+        (BalanceDelta result,) = manager.modifyLiquidity(
+            key,
+            addLiquidityParams,
+            new bytes(0)
+        );
+        Lock.lock();
+        key.currency0.settle(manager, address(this), uint128(-result.amount0()), false);
+        key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
+    }
+
+    function settleSyntheticSwap(BalanceDelta synthSwapDelta, bool zeroForOne) public {
+        if (zeroForOne) {
+            syntheticPoolKey.currency0.settle(manager, address(this), uint128(-synthSwapDelta.amount0()), false);
+            manager.take(syntheticPoolKey.currency1, address(this), uint128(synthSwapDelta.amount1()));
+        } else {
+            syntheticPoolKey.currency1.settle(manager, address(this), uint128(-synthSwapDelta.amount1()), false);
+            manager.take(syntheticPoolKey.currency0, address(this), uint128(synthSwapDelta.amount0()));
+        }
+    }
+
     function beforeSwap(address sender, PoolKey calldata key, IPoolManager.SwapParams calldata params, bytes calldata data)
     external
     override
     returns (bytes4, BeforeSwapDelta, uint24)
     {
-        // TODO: Swap tokens in synthetic pool
-        (uint160 synthSqrtPriceX96BeforeSwap,int24 syntheticTickBeforeSwap,,) = manager.getSlot0(syntheticPoolKey.toId());
+        (uint160 synthSqrtPriceX96BeforeSwap, int24 syntheticTickBeforeSwap ,,) = 
+            manager.getSlot0(syntheticPoolKey.toId());
+        
         BalanceDelta synthSwapDelta = manager.swap(syntheticPoolKey, params, data);
-        (uint160 synthSqrtPriceX96AfterSwap,int24 syntheticTickAfterSwap,,) = manager.getSlot0(syntheticPoolKey.toId());
-        syntheticPoolKey.currency0.settle(manager, address(this), uint128(-synthSwapDelta.amount0()), false);
-        manager.take(syntheticPoolKey.currency1, address(this), uint128(synthSwapDelta.amount1()));
 
+        (uint160 synthSqrtPriceX96AfterSwap, int24 syntheticTickAfterSwap ,,) = 
+            manager.getSlot0(syntheticPoolKey.toId());
+
+        settleSyntheticSwap(synthSwapDelta, params.zeroForOne);
+            
         uint256 liquidityDelta = LiquidityAmounts.getLiquidityForAmount1(
             synthSqrtPriceX96BeforeSwap,
             synthSqrtPriceX96AfterSwap,
-            uint128(synthSwapDelta.amount1())
+            uint128(params.zeroForOne ? synthSwapDelta.amount1() : synthSwapDelta.amount0())
         );
 
-        // TODO: OneToZero Swap
-        refillVirtualLiquidityBeforeSwap(key, syntheticTickBeforeSwap, syntheticTickAfterSwap, int(liquidityDelta));
-
-        // data of synthetic swap
-
-//        (uint160 sqrtPriceX96, int24 tickCurrent,,) = manager.getSlot0(key.toId());
-////    (uint128 liquidityGross, int128 liquidityNet,,) = manager.getTickInfo(key.toId(), tickCurrent);
-////        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) = manager.getFeeGrowthInside(key.toId(), -1, 0);
-//    console2.log("-----------------------");
-//    console2.log("Current ticker", tickCurrent);
-//    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), tickCurrent));
-////    console2.log("Liquidity Gross from current ticker", liquidityGross);
-////    console2.log("Liquidity Net from current ticker", liquidityNet);
-//    console2.log("Tick from price", TickMath.getTickAtSqrtPrice(sqrtPriceX96));
-//    console2.log("Price", sqrtPriceX96);
-//    (int24 nextTicker,) = manager.getNextInitializedTickWithinOneWord(key.toId(), tickCurrent, key.tickSpacing, true);
-//    (uint128 nextLiquidityGross, int128 nextLiquidityNet,,) = manager.getTickInfo(key.toId(), nextTicker);
-//    console2.log("Next ticker", nextTicker);
-//    console2.log("Liquidity", manager.getNetLiquidityAtTick(key.toId(), nextTicker));
-//    console2.log("Liquidity Gross from next ticker", nextLiquidityGross);
-//    console2.log("Liquidity Net from next ticker", nextLiquidityNet);
-//    console2.log("-----------------------");
-
-//        (BalanceDelta result,) = manager.modifyLiquidity(
-//            key,
-//            IPoolManager.ModifyLiquidityParams(TickMath.minUsableTick(60), TickMath.maxUsableTick(60), 6 ether, 0),
-//            new bytes(0)
-//        );
-//
-//        key.currency0.settle(manager, address(this), uint128(-result.amount0()), false);
-//        key.currency1.settle(manager, address(this), uint128(-result.amount1()), false);
-
-
+        params.zeroForOne ? 
+            refillVirtualLiquidityBeforeSwapZeroForOne(
+                key, syntheticTickBeforeSwap, syntheticTickAfterSwap, int(liquidityDelta)
+            ) : 
+            refillVirtualLiquidityBeforeSwapOneForZero(
+                key, syntheticTickBeforeSwap, syntheticTickAfterSwap, int(liquidityDelta)
+            );
 
         return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, 0);
     }
@@ -185,9 +245,7 @@ contract LendingHook is BaseHook {
         BalanceDelta delta,
         bytes calldata data
     ) external override returns (bytes4, BalanceDelta) {
-        console2.log("Baaaa");
         if(Lock.isUnlocked()) {
-            console2.log("Here");
             return (BaseHook.afterAddLiquidity.selector, BalanceDeltaLibrary.ZERO_DELTA);
         }
 

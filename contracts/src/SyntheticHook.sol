@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {BaseHook} from "v4-periphery/BaseHook.sol";
 import "forge-std/Test.sol";
-
+import {PoolGetters} from "v4-periphery/libraries/PoolGetters.sol";
 import {Hooks} from "v4-core/src/libraries/Hooks.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
@@ -17,7 +17,6 @@ import {TickBitmap} from "v4-core/src/libraries/TickBitmap.sol";
 import {IERC20} from "forge-std/interfaces/IERC20.sol";
 import {Pool} from "v4-core/src/libraries/Pool.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
-import {PoolGetters} from "lib/v4-periphery/contracts/libraries/PoolGetters.sol";
 
 contract SyntheticHook is BaseHook {
     using PoolIdLibrary for PoolKey;

@@ -117,24 +117,31 @@ contract CounterTest is Test, Deployers {
 
     }
 
-    function testSwaprHooks() public {
+    function testSwapZeroForOneHooks() public {
         // Perform a test swap //
         bool zeroForOne = true;
         int256 amountSpecified = 0.000000001 ether; // negative number indicates exact input swap!
 
         BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
         BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+        BalanceDelta swapDelta1 = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
 
         assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
         assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
-
     }
 
-//    function testAddLiquidityHooks() public {
-////        // positions were created in setup()
-//        assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(hook)), 1 ether);
-//        assertEq(IERC20(Currency.unwrap(currency1)).balanceOf(address(hook)), 1 ether);
-//    }
+    function testSwapOneForZeroHooks() public {
+        // Perform a test swap //
+        bool zeroForOne = false;
+        int256 amountSpecified = 0.000000001 ether; // negative number indicates exact input swap!
+
+        BalanceDelta controlSwapDelta = swap(controlKey, zeroForOne, amountSpecified, ZERO_BYTES);
+
+        BalanceDelta swapDelta = swap(key, zeroForOne, amountSpecified, ZERO_BYTES);
+
+        assertEq(int256(swapDelta.amount0()), int256(controlSwapDelta.amount0()));
+        assertEq(int256(swapDelta.amount1()), int256(controlSwapDelta.amount1()));
+    }
 
     function testRemoveLiquidityHooks() public {
         assertEq(IERC20(Currency.unwrap(currency0)).balanceOf(address(manager)), 3 ether);
