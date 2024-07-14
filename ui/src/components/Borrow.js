@@ -10,6 +10,7 @@ import useLendingPool from '../hooks/useLendingPool'
 import { calculateAvailableTokens, fromDecimals } from '../utils/liquidity'
 // import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { COINS } from '../constants/coins'
+import {EthersLender} from "../lib/lender";
 
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
@@ -43,10 +44,20 @@ export default function Borrow({ onClose }) {
     return fromToken && toToken && fromToken.symbol !== toToken.symbol
   }
 
-  const isBorrowValid = isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
+  const isBorrowValid = true // isConnected && validateTokens(borrowToken, collateralToken) && selectedCondition && targetPrice
 
   const handleTargetPriceChange = (event) => {
     setTargetPrice(event.target.value)
+  }
+
+  const borrowSubmit = () => {
+    EthersLender[31337].borrow(
+        collateralToken.address,
+        10,
+        borrowToken.address,
+        100,
+        4000
+    )
   }
 
   return (
@@ -98,7 +109,7 @@ export default function Borrow({ onClose }) {
             </div>
           </div>
           <div className="actions">
-            <button disabled={!isBorrowValid} onClick={() => alert('Borrow request submitted!')}>Borrow</button>
+            <button disabled={!isBorrowValid} onClick={() => borrowSubmit()}>Borrow</button>
           </div>
           {!isConnected && (
             <div className="error">Connect your wallet to Borrow</div>
