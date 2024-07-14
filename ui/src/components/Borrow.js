@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatUnits, parseUnits } from 'ethers'
+import { useWeb3ModalProvider } from '@web3modal/ethers/react'
 import Card from './Card'
 import Spinner from './Spinner'
 import ErrorButton from './ErrorButton'
@@ -19,6 +20,7 @@ import { COINS } from '../constants/coins'
 export default function Borrow({ onClose }) {
   const { exchange } = useExchange()
   const { isConnected, chainId } = useWallet()
+  const { walletProvider } = useWeb3ModalProvider()
 
   const [borrowToken, setBorrowToken] = useState(null)
   const [collateralToken, setCollateralToken] = useState(null)
@@ -73,7 +75,7 @@ export default function Borrow({ onClose }) {
 
   const borrowSubmit = () => {
     setLoading(true)
-    LENDERS[chainId].borrow(
+    LENDERS[chainId].connect(walletProvider).borrow(
       COINS[collateralToken.symbol].address[chainId],
       collateralAmount,
       COINS[borrowToken.symbol].address[chainId],
